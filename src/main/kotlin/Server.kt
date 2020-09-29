@@ -1,0 +1,40 @@
+import io.vertx.core.Vertx
+import io.vertx.core.http.HttpServer
+import io.vertx.ext.web.Router
+import io.vertx.ext.web.handler.BodyHandler
+
+/**
+ * @Author: johannesC
+ * @Date: 2020-09-28, Mon
+ **/
+class Server(private val port: Int = 8080) {
+
+    private val vertx: Vertx = Vertx.vertx()
+    private val server: HttpServer = vertx.createHttpServer()
+    private val router: Router = Router.router(vertx)
+
+    fun startServer() {
+        println("Setting up server on port $port")
+        router.route().handler(BodyHandler.create())
+        server.requestHandler { router.handle(it) }.listen(port) {
+            if (it.succeeded()) println("Server started on port $port")
+            else println(it.cause())
+        }
+    }
+
+    fun attachPostRoute(path: String, handler: (String) -> String) {
+        println("Attached post route at $path")
+        router.post(path)
+            .handler {
+                it.response().end(handler(it.bodyAsString))
+            }
+    }
+
+    fun attachGetRoute(path: String, handler: () -> String) {
+        println("Attached get route at $path")
+        router.get(path)
+            .handler {
+                it.response().end(handler())
+            }
+    }
+}
