@@ -12,13 +12,7 @@ class Market(
     fun handleLimitOrder(order: LimitOrder): String {
         if (order.side == "SELL") {
             if (orderBook.buySide.containsKey(order.price)) {
-                val limit = orderBook.buySide[order.price]!!
-                val handeledOrder = depleteOrderForPrice(order, limit)
-                if (limit.orders.peek() == null) {
-                    orderBook.buySide.remove(order.price)
-                }
-
-                println(handeledOrder)
+                depleteOrder(order)
             } else if (orderBook.sellSide.containsKey(order.price)) {
                 val limit = orderBook.sellSide[order.price]
                 limit?.orders?.add(order)
@@ -61,31 +55,33 @@ class Market(
         return "Done"
     }
 
-    private fun depleteOrderForPrice(order: LimitOrder, bookOrderAtOrderPrice: Limit): LimitOrder {
-//        val firstOrder = bookOrderAtOrderPrice.orders.first!!
+    private fun depleteOrder(order: LimitOrder) {
         var orderBeingCompleted = order.copy()
-//        if (order.quantity < firstOrder.quantity) {
-//            val newFirstOrder = firstOrder.copy(quantity = firstOrder.quantity - order.quantity)
-//            bookOrderAtOrderPrice.orders[0] = newFirstOrder
-//        } else if (order.quantity == firstOrder.quantity) {
-//            bookOrderAtOrderPrice.orders.pop()
-//        } else {
-////            while ()
-//        }
 
         while (orderBeingCompleted.quantity > 0.0) {
+            val limit = orderBook.buySide[order.price]!!
+            orderBeingCompleted = depleteOrderForPrice(order, limit)
+            if (limit.orders.peek() == null) {
+                orderBook.buySide.remove(order.price)
+            }
+        }
+    }
+
+    private fun depleteOrderForPrice(order: LimitOrder, bookOrderAtOrderPrice: Limit): LimitOrder {
+        var orderBeingCompleted = order.copy()
+        while (orderBeingCompleted.quantity > 0.0 && !bookOrderAtOrderPrice.orders.isEmpty()) {
             val firstOrderInner = bookOrderAtOrderPrice.orders.first!!
-            val abc = handleOrderForExistingOrder(orderBeingCompleted, firstOrderInner)
-            orderBeingCompleted = abc.first
-            if (abc.second.quantity == 0.0) {
+            val handledOrderResult = handleOrderForExistingOrder(orderBeingCompleted, firstOrderInner)
+            orderBeingCompleted = handledOrderResult.first
+            if (handledOrderResult.second.quantity == 0.0) {
                 bookOrderAtOrderPrice.orders.pop()
             } else {
-                bookOrderAtOrderPrice.orders[0] = abc.second
+                bookOrderAtOrderPrice.orders[0] = handledOrderResult.second
             }
         }
 
 
-        return order.copy(quantity = 0.0)
+        return order.copy(quantity = orderBeingCompleted.quantity)
     }
 
     private fun handleOrderForExistingOrder(
@@ -97,7 +93,7 @@ class Market(
         } else {
             Pair(
                 order.copy(quantity = order.quantity - existingOrder.quantity),
-                existingOrder.copy(quantity = existingOrder.quantity - order.quantity)
+                existingOrder.copy(quantity = 0.0)
             )
         }
     }

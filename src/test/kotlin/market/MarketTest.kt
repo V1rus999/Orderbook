@@ -151,11 +151,21 @@ class MarketTest {
         market.handleLimitOrder(sellLimitOrder)
         //then
         Assert.assertEquals(
-            existingBuyLimitOrder.orderId,
-            market.retrieveCurrentOrderBook().buySide[existingBuyLimitOrder.price]?.orders?.poll()?.orderId
+            existingSecondBuyLimitOrder.orderId,
+            market.retrieveCurrentOrderBook().buySide[existingSecondBuyLimitOrder.price]?.orders?.first?.orderId
         )
         Assert.assertEquals(
             (existingBuyLimitOrder.quantity + existingSecondBuyLimitOrder.quantity) - sellLimitOrder.quantity,
+            market.retrieveCurrentOrderBook().buySide[existingBuyLimitOrder.price]?.totalVolume()
+        )
+
+        //when another trade happens
+        market.handleLimitOrder(existingSecondBuyLimitOrder)
+        market.handleLimitOrder(sellLimitOrder)
+
+        //then
+        Assert.assertEquals(
+            (0.1 + existingSecondBuyLimitOrder.quantity) - sellLimitOrder.quantity,
             market.retrieveCurrentOrderBook().buySide[existingBuyLimitOrder.price]?.totalVolume()
         )
     }
