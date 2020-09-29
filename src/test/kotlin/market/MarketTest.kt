@@ -117,4 +117,46 @@ class MarketTest {
         Assert.assertTrue(market.retrieveCurrentOrderBook().sellSide.size == 0)
         Assert.assertTrue(market.retrieveCurrentOrderBook().buySide.size == 0)
     }
+
+    @Test
+    fun `when sell order on existing buy price and quantity of buy price is higher then fill order only`() {
+        //given
+        val market = Market()
+        val existingBuyLimitOrder = LimitOrder("BUY", 0.2, 1000.0, "BTCZAR")
+        val sellLimitOrder = LimitOrder("SELL", 0.1, 1000.0, "BTCZAR")
+        market.handleLimitOrder(existingBuyLimitOrder)
+        //when
+        market.handleLimitOrder(sellLimitOrder)
+        //then
+        Assert.assertEquals(
+            existingBuyLimitOrder.orderId,
+            market.retrieveCurrentOrderBook().buySide[existingBuyLimitOrder.price]?.orders?.first?.orderId
+        )
+        Assert.assertEquals(
+            existingBuyLimitOrder.quantity - sellLimitOrder.quantity,
+            market.retrieveCurrentOrderBook().buySide[existingBuyLimitOrder.price]?.totalVolume()
+        )
+    }
+
+    @Test
+    fun `when sell order on existing buy price with multiple limits and quantity of buy price is higher then fill order only and remove filled orders`() {
+        //given
+        val market = Market()
+        val existingBuyLimitOrder = LimitOrder("BUY", 0.2, 1000.0, "BTCZAR")
+        val existingSecondBuyLimitOrder = LimitOrder("BUY", 0.2, 1000.0, "BTCZAR")
+        val sellLimitOrder = LimitOrder("SELL", 0.3, 1000.0, "BTCZAR")
+        market.handleLimitOrder(existingBuyLimitOrder)
+        market.handleLimitOrder(existingSecondBuyLimitOrder)
+        //when
+        market.handleLimitOrder(sellLimitOrder)
+        //then
+        Assert.assertEquals(
+            existingBuyLimitOrder.orderId,
+            market.retrieveCurrentOrderBook().buySide[existingBuyLimitOrder.price]?.orders?.poll()?.orderId
+        )
+        Assert.assertEquals(
+            (existingBuyLimitOrder.quantity + existingSecondBuyLimitOrder.quantity) - sellLimitOrder.quantity,
+            market.retrieveCurrentOrderBook().buySide[existingBuyLimitOrder.price]?.totalVolume()
+        )
+    }
 }

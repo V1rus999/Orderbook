@@ -12,13 +12,13 @@ class Market(
     fun handleLimitOrder(order: LimitOrder): String {
         if (order.side == "SELL") {
             if (orderBook.buySide.containsKey(order.price)) {
-                val limit = orderBook.buySide[order.price]
-                val completedOrder = limit?.orders?.poll()
-                if (limit?.orders?.peek() == null) {
+                val limit = orderBook.buySide[order.price]!!
+                val handeledOrder = depleteOrderForPrice(order, limit)
+                if (limit.orders.peek() == null) {
                     orderBook.buySide.remove(order.price)
                 }
 
-                println(completedOrder)
+                println(handeledOrder)
             } else if (orderBook.sellSide.containsKey(order.price)) {
                 val limit = orderBook.sellSide[order.price]
                 limit?.orders?.add(order)
@@ -59,6 +59,47 @@ class Market(
         }
 
         return "Done"
+    }
+
+    private fun depleteOrderForPrice(order: LimitOrder, bookOrderAtOrderPrice: Limit): LimitOrder {
+//        val firstOrder = bookOrderAtOrderPrice.orders.first!!
+        var orderBeingCompleted = order.copy()
+//        if (order.quantity < firstOrder.quantity) {
+//            val newFirstOrder = firstOrder.copy(quantity = firstOrder.quantity - order.quantity)
+//            bookOrderAtOrderPrice.orders[0] = newFirstOrder
+//        } else if (order.quantity == firstOrder.quantity) {
+//            bookOrderAtOrderPrice.orders.pop()
+//        } else {
+////            while ()
+//        }
+
+        while (orderBeingCompleted.quantity > 0.0) {
+            val firstOrderInner = bookOrderAtOrderPrice.orders.first!!
+            val abc = handleOrderForExistingOrder(orderBeingCompleted, firstOrderInner)
+            orderBeingCompleted = abc.first
+            if (abc.second.quantity == 0.0) {
+                bookOrderAtOrderPrice.orders.pop()
+            } else {
+                bookOrderAtOrderPrice.orders[0] = abc.second
+            }
+        }
+
+
+        return order.copy(quantity = 0.0)
+    }
+
+    private fun handleOrderForExistingOrder(
+        order: LimitOrder,
+        existingOrder: LimitOrder
+    ): Pair<LimitOrder, LimitOrder> {
+        return if (order.quantity <= existingOrder.quantity) {
+            Pair(order.copy(quantity = 0.0), existingOrder.copy(quantity = existingOrder.quantity - order.quantity))
+        } else {
+            Pair(
+                order.copy(quantity = order.quantity - existingOrder.quantity),
+                existingOrder.copy(quantity = existingOrder.quantity - order.quantity)
+            )
+        }
     }
 
     fun retrieveCurrentOrderBook(): OrderBook = orderBook
