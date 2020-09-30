@@ -30,7 +30,7 @@ class MarketTest {
         //then
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().sellSide[limitOrder.price]?.orders?.peek()?.orderId
+            market.retrieveCurrentOrderBook().sellSide.peek().orderId
         )
     }
 
@@ -44,49 +44,49 @@ class MarketTest {
         //then
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().buySide[limitOrder.price]?.orders?.peek()?.orderId
+            market.retrieveCurrentOrderBook().buySide.peek().orderId
         )
     }
 
     @Test
-    fun `when sell order on existing price then add new order to book`() {
+    fun `when sell order on new price and book already had a value then add new order to book`() {
         //given
         val market = Market()
         val existingLimitOrder = LimitOrder("SELL", 0.3, 1000.0, "BTCZAR")
-        val limitOrder = LimitOrder("SELL", 0.1, 1000.0, "BTCZAR")
+        val limitOrder = LimitOrder("SELL", 0.1, 2000.0, "BTCZAR")
         market.handleLimitOrder(existingLimitOrder)
         //when
         market.handleLimitOrder(limitOrder)
         //then
         Assert.assertEquals(
             existingLimitOrder.orderId,
-            market.retrieveCurrentOrderBook().sellSide[existingLimitOrder.price]?.orders?.poll()?.orderId
+            market.retrieveCurrentOrderBook().sellSide.poll().orderId
         )
 
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().sellSide[limitOrder.price]?.orders?.poll()?.orderId
+            market.retrieveCurrentOrderBook().sellSide.peek().orderId
         )
     }
 
     @Test
-    fun `when buy order on existing price then add new order to book`() {
+    fun `when sell order on existing price then order prices according to oldest trade first`() {
         //given
         val market = Market()
-        val existingLimitOrder = LimitOrder("BUY", 0.3, 1000.0, "BTCZAR")
-        val limitOrder = LimitOrder("BUY", 0.1, 1000.0, "BTCZAR")
+        val existingLimitOrder = LimitOrder("SELL", 0.3, 1000.0, "BTCZAR", orderTimestamp = 1601446014449)
+        val limitOrder = LimitOrder("SELL", 0.1, 1000.0, "BTCZAR", orderTimestamp = 1601446074910)
         market.handleLimitOrder(existingLimitOrder)
         //when
         market.handleLimitOrder(limitOrder)
         //then
         Assert.assertEquals(
             existingLimitOrder.orderId,
-            market.retrieveCurrentOrderBook().buySide[existingLimitOrder.price]?.orders?.poll()?.orderId
+            market.retrieveCurrentOrderBook().sellSide.poll().orderId
         )
 
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().buySide[limitOrder.price]?.orders?.poll()?.orderId
+            market.retrieveCurrentOrderBook().sellSide.peek().orderId
         )
     }
 
@@ -130,21 +130,21 @@ class MarketTest {
         //then
         Assert.assertEquals(
             existingBuyLimitOrder.orderId,
-            market.retrieveCurrentOrderBook().buySide[existingBuyLimitOrder.price]?.orders?.first?.orderId
+            market.retrieveCurrentOrderBook().buySide.peek().orderId
         )
         Assert.assertEquals(
             existingBuyLimitOrder.quantity - sellLimitOrder.quantity,
-            market.retrieveCurrentOrderBook().buySide[existingBuyLimitOrder.price]?.totalVolume()
+            market.retrieveCurrentOrderBook().buySide.peek().quantity, 0.0
         )
     }
 
-    @Test
+        @Test
     fun `when sell order on existing buy price with multiple limits and quantity of buy price is higher then fill order only and remove filled orders`() {
         //given
         val market = Market()
-        val existingBuyLimitOrder = LimitOrder("BUY", 0.2, 1000.0, "BTCZAR")
-        val existingSecondBuyLimitOrder = LimitOrder("BUY", 0.2, 1000.0, "BTCZAR")
-        val sellLimitOrder = LimitOrder("SELL", 0.3, 1000.0, "BTCZAR")
+        val existingBuyLimitOrder = LimitOrder("BUY", 0.2, 1000.0, "BTCZAR", orderTimestamp = 10)
+        val existingSecondBuyLimitOrder = LimitOrder("BUY", 0.2, 1000.0, "BTCZAR", orderTimestamp = 12)
+        val sellLimitOrder = LimitOrder("SELL", 0.3, 1000.0, "BTCZAR", orderTimestamp = 14)
         market.handleLimitOrder(existingBuyLimitOrder)
         market.handleLimitOrder(existingSecondBuyLimitOrder)
         //when
@@ -152,21 +152,88 @@ class MarketTest {
         //then
         Assert.assertEquals(
             existingSecondBuyLimitOrder.orderId,
-            market.retrieveCurrentOrderBook().buySide[existingSecondBuyLimitOrder.price]?.orders?.first?.orderId
+            market.retrieveCurrentOrderBook().buySide.peek().orderId
         )
         Assert.assertEquals(
             (existingBuyLimitOrder.quantity + existingSecondBuyLimitOrder.quantity) - sellLimitOrder.quantity,
-            market.retrieveCurrentOrderBook().buySide[existingBuyLimitOrder.price]?.totalVolume()
+            market.retrieveCurrentOrderBook().buySide.peek().quantity, 0.0
         )
 
         //when another trade happens
-        market.handleLimitOrder(existingSecondBuyLimitOrder)
-        market.handleLimitOrder(sellLimitOrder)
+        market.handleLimitOrder(existingSecondBuyLimitOrder.copy(orderTimestamp = 16))
+        market.handleLimitOrder(sellLimitOrder.copy(orderTimestamp = 18))
 
         //then
         Assert.assertEquals(
             (0.1 + existingSecondBuyLimitOrder.quantity) - sellLimitOrder.quantity,
-            market.retrieveCurrentOrderBook().buySide[existingBuyLimitOrder.price]?.totalVolume()
+            market.retrieveCurrentOrderBook().buySide.peek().quantity, 0.0
+        )
+    }
+
+    @Test
+    fun `when buy order on existing price then add new order to book`() {
+        //given
+        val market = Market()
+        val existingLimitOrder = LimitOrder("BUY", 0.3, 1000.0, "BTCZAR", orderTimestamp = 1)
+        val limitOrder = LimitOrder("BUY", 0.1, 1000.0, "BTCZAR", orderTimestamp = 2)
+        market.handleLimitOrder(existingLimitOrder)
+        //when
+        market.handleLimitOrder(limitOrder)
+        //then
+        Assert.assertEquals(
+            existingLimitOrder.orderId,
+            market.retrieveCurrentOrderBook().buySide.poll().orderId
+        )
+
+        Assert.assertEquals(
+            limitOrder.orderId,
+            market.retrieveCurrentOrderBook().buySide.peek().orderId
+        )
+    }
+
+    @Test
+    fun `when sell order on existing buy price and sell is larger than buy then add remaining buy order to book`() {
+        //given
+        val market = Market()
+        val existingLimitOrder = LimitOrder("BUY", 0.3, 1000.0, "BTCZAR", orderTimestamp = 1)
+        val limitOrder = LimitOrder("SELL", 0.4, 1000.0, "BTCZAR", orderTimestamp = 2)
+        market.handleLimitOrder(existingLimitOrder)
+        //when
+        market.handleLimitOrder(limitOrder)
+        //then
+        Assert.assertEquals(
+            limitOrder.orderId,
+            market.retrieveCurrentOrderBook().sellSide.peek().orderId
+        )
+
+        Assert.assertEquals(
+            limitOrder.quantity - existingLimitOrder.quantity,
+            market.retrieveCurrentOrderBook().sellSide.peek().quantity,
+            0.0
+        )
+    }
+
+    @Test
+    fun `when sell order on two existing buy prices and sell is larger than buys then add remaining sell order to book`() {
+        //given
+        val market = Market()
+        val existingLimitOrder = LimitOrder("BUY", 0.3, 1122.0, "BTCZAR", orderTimestamp = 1)
+        val existingOtherLimitOrder = LimitOrder("BUY", 0.2, 1000.0, "BTCZAR", orderTimestamp = 2)
+        val limitOrder = LimitOrder("SELL", 0.6, 900.0, "BTCZAR", orderTimestamp = 3)
+        market.handleLimitOrder(existingLimitOrder)
+        market.handleLimitOrder(existingOtherLimitOrder)
+        //when
+        market.handleLimitOrder(limitOrder)
+        //then
+        Assert.assertEquals(
+            limitOrder.orderId,
+            market.retrieveCurrentOrderBook().sellSide.peek().orderId
+        )
+
+        Assert.assertEquals(
+            limitOrder.quantity - (existingLimitOrder.quantity + existingOtherLimitOrder.quantity),
+            market.retrieveCurrentOrderBook().sellSide.peek().quantity,
+            0.0
         )
     }
 }

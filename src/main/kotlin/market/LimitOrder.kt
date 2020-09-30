@@ -7,5 +7,6 @@ data class LimitOrder(
     val quantity: Double,
     val price: Double,
     val pair: String,
+    val orderTimestamp: Long = System.currentTimeMillis(),
     val orderId: UUID = UUID.randomUUID()
 )
