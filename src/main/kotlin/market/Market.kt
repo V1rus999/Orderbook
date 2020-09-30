@@ -16,7 +16,7 @@ class Market(
         var orderBeingCompleted = order.copy()
         var orderBookDepleted = false
 
-        while (orderBeingCompleted.quantity > 0.0 && !orderBookDepleted) {
+        while (orderBeingCompleted.quantity > 0.0.toBigDecimal() && !orderBookDepleted) {
             val topBuy = orderBook.retrieveBestBuyPrice()
             val topSell = orderBook.retrieveBestSellPrice()
 
@@ -45,7 +45,7 @@ class Market(
                     //TODO need to return a result object
                     orderBook.removeTopBuy()
                     orderBook.addNewTrade(newTopBuy)
-                    orderBeingCompleted.copy(quantity = 0.0)
+                    orderBeingCompleted.copy(quantity = 0.toBigDecimal())
                 } else {
                     orderBook.removeTopBuy()
                     orderBeingCompleted.copy(quantity = orderBeingCompleted.quantity - topBuy.quantity)
@@ -56,7 +56,7 @@ class Market(
                     //TODO add these orders to a completed orders list
                     orderBook.removeTopSell()
                     orderBook.addNewTrade(newTopSell)
-                    orderBeingCompleted.copy(quantity = 0.0)
+                    orderBeingCompleted.copy(quantity = 0.toBigDecimal())
                 } else {
                     orderBook.removeTopSell()
                     orderBeingCompleted.copy(quantity = orderBeingCompleted.quantity - topSell.quantity)
