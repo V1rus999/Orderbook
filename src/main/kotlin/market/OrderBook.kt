@@ -27,6 +27,24 @@ data class OrderBook(
     fun removeTopBuy(): LimitOrder? = buySide.poll()
     fun removeTopSell(): LimitOrder? = sellSide.poll()
 
+    fun modifyTopLimit(newTopLimit: LimitOrder) {
+        if (newTopLimit.side == "BUY") {
+            buySide.poll()
+            addNewTrade(newTopLimit)
+        } else {
+            sellSide.poll()
+            addNewTrade(newTopLimit)
+        }
+    }
+
+    fun removeTopLimit(topLimitToRemove: LimitOrder) {
+        if (topLimitToRemove.side == "BUY") {
+            buySide.poll()
+        } else {
+            sellSide.poll()
+        }
+    }
+
     fun addNewTrade(order: LimitOrder) {
         if (order.side == "BUY") {
             buySide.add(order)
