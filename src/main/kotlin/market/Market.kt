@@ -26,13 +26,13 @@ class Market(
                 break
             }
 
-            if (topBuy != null && orderBeingCompleted.side == "BUY" && orderBeingCompleted.price <= topBuy.price) {
+            if (topBuy != null && orderBeingCompleted.side == "BUY" && topBuy.price >= orderBeingCompleted.price) {
                 // This is an additional trade at this price
                 orderBook.addNewTrade(orderBeingCompleted)
                 break
             }
 
-            if (topSell != null && orderBeingCompleted.side == "SELL" && orderBeingCompleted.price >= topSell.price) {
+            if (topSell != null && orderBeingCompleted.side == "SELL" && topSell.price <= orderBeingCompleted.price) {
                 // This is an additional trade at this price
                 orderBook.addNewTrade(orderBeingCompleted)
                 break
@@ -41,6 +41,8 @@ class Market(
             if (topBuy != null && topBuy.price >= orderBeingCompleted.price) {
                 orderBeingCompleted = if (topBuy.quantity > orderBeingCompleted.quantity) {
                     val newTopBuy = topBuy.copy(quantity = topBuy.quantity - orderBeingCompleted.quantity)
+                    //TODO add these orders to a completed orders list
+                    //TODO need to return a result object
                     orderBook.removeTopBuy()
                     orderBook.addNewTrade(newTopBuy)
                     orderBeingCompleted.copy(quantity = 0.0)
@@ -48,9 +50,10 @@ class Market(
                     orderBook.removeTopBuy()
                     orderBeingCompleted.copy(quantity = orderBeingCompleted.quantity - topBuy.quantity)
                 }
-            } else if (topSell != null && topSell.price >= orderBeingCompleted.price) {
+            } else if (topSell != null && topSell.price <= orderBeingCompleted.price) {
                 orderBeingCompleted = if (topSell.quantity > orderBeingCompleted.quantity) {
                     val newTopSell = topSell.copy(quantity = topSell.quantity - orderBeingCompleted.quantity)
+                    //TODO add these orders to a completed orders list
                     orderBook.removeTopSell()
                     orderBook.addNewTrade(newTopSell)
                     orderBeingCompleted.copy(quantity = 0.0)

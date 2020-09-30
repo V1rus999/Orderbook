@@ -138,7 +138,7 @@ class MarketTest {
         )
     }
 
-        @Test
+    @Test
     fun `when sell order on existing buy price with multiple limits and quantity of buy price is higher then fill order only and remove filled orders`() {
         //given
         val market = Market()
@@ -214,14 +214,16 @@ class MarketTest {
     }
 
     @Test
-    fun `when sell order on two existing buy prices and sell is larger than buys then add remaining sell order to book`() {
+    fun `when large sell order on exiting buy wall then fill sell order until sell order price is reached`() {
         //given
         val market = Market()
         val existingLimitOrder = LimitOrder("BUY", 0.3, 1122.0, "BTCZAR", orderTimestamp = 1)
         val existingOtherLimitOrder = LimitOrder("BUY", 0.2, 1000.0, "BTCZAR", orderTimestamp = 2)
+        val existingCheapLimitOrder = LimitOrder("BUY", 0.2, 800.0, "BTCZAR", orderTimestamp = 2)
         val limitOrder = LimitOrder("SELL", 0.6, 900.0, "BTCZAR", orderTimestamp = 3)
         market.handleLimitOrder(existingLimitOrder)
         market.handleLimitOrder(existingOtherLimitOrder)
+        market.handleLimitOrder(existingCheapLimitOrder)
         //when
         market.handleLimitOrder(limitOrder)
         //then
@@ -233,6 +235,66 @@ class MarketTest {
         Assert.assertEquals(
             limitOrder.quantity - (existingLimitOrder.quantity + existingOtherLimitOrder.quantity),
             market.retrieveCurrentOrderBook().sellSide.peek().quantity,
+            0.0
+        )
+    }
+
+    @Test
+    fun `when large buy order on exiting sell wall then fill buy order until buy order price is reached`() {
+        //given
+        val market = Market()
+        val existingLimitOrder = LimitOrder("SELL", 0.3, 1122.0, "BTCZAR", orderTimestamp = 1)
+        val existingOtherLimitOrder = LimitOrder("SELL", 0.2, 1000.0, "BTCZAR", orderTimestamp = 2)
+        val existingCheapLimitOrder = LimitOrder("SELL", 0.2, 800.0, "BTCZAR", orderTimestamp = 2)
+        val limitOrder = LimitOrder("BUY", 0.6, 1100.0, "BTCZAR", orderTimestamp = 3)
+        market.handleLimitOrder(existingLimitOrder)
+        market.handleLimitOrder(existingOtherLimitOrder)
+        market.handleLimitOrder(existingCheapLimitOrder)
+        //when
+        market.handleLimitOrder(limitOrder)
+        //then
+        Assert.assertEquals(
+            existingLimitOrder.orderId,
+            market.retrieveCurrentOrderBook().sellSide.peek().orderId
+        )
+
+        Assert.assertEquals(
+            limitOrder.orderId,
+            market.retrieveCurrentOrderBook().buySide.peek().orderId
+        )
+
+        Assert.assertEquals(
+            limitOrder.quantity - (existingCheapLimitOrder.quantity + existingOtherLimitOrder.quantity),
+            market.retrieveCurrentOrderBook().buySide.peek().quantity,
+            0.0
+        )
+    }
+
+    @Test
+    fun `when large buy order on exiting sell wall and buy order is larger than sell wall then wipe sell wall`() {
+        //given
+        val market = Market()
+        val existingLimitOrder = LimitOrder("SELL", 0.3, 1122.0, "BTCZAR", orderTimestamp = 1)
+        val existingOtherLimitOrder = LimitOrder("SELL", 0.2, 1000.0, "BTCZAR", orderTimestamp = 2)
+        val existingCheapLimitOrder = LimitOrder("SELL", 0.2, 800.0, "BTCZAR", orderTimestamp = 2)
+        val limitOrder = LimitOrder("BUY", 1.0, 1200.0, "BTCZAR", orderTimestamp = 3)
+        market.handleLimitOrder(existingLimitOrder)
+        market.handleLimitOrder(existingOtherLimitOrder)
+        market.handleLimitOrder(existingCheapLimitOrder)
+        //when
+        market.handleLimitOrder(limitOrder)
+        //then
+        Assert.assertTrue(
+            market.retrieveCurrentOrderBook().retrieveBestSellPrice() == null
+        )
+
+        Assert.assertTrue(
+            market.retrieveCurrentOrderBook().retrieveBestBuyPrice()?.orderId == limitOrder.orderId
+        )
+
+        Assert.assertEquals(
+            limitOrder.quantity - (existingCheapLimitOrder.quantity + existingOtherLimitOrder.quantity + existingLimitOrder.quantity),
+            market.retrieveCurrentOrderBook().retrieveBestBuyPrice()!!.quantity,
             0.0
         )
     }
