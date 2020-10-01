@@ -14,6 +14,7 @@ class MarketApi(private val market: Market = Market(), private val gson: Gson = 
 
     private fun <T> String.transformStringBodyToObj(clazz: KClass<out Any>): T {
         val transformedObject = gson.fromJson(this, clazz.java)
+        //TODO This will fail because of bigdecimal. Need to write a custom parser
         return transformedObject as T
     }
 

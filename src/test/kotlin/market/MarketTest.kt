@@ -285,4 +285,32 @@ class MarketTest {
             market.retrieveCurrentOrderBook().retrieveBestBuyPrice()!!.quantity
         )
     }
+
+    @Test
+    fun `when large sell order on exiting buy wall and sell order is larger than buy wall then wipe buy wall`() {
+        //given
+        val market = Market()
+        val existingLimitOrder = LimitOrder("BUY", 0.3.toBigDecimal(), 800.0, "BTCZAR", orderTimestamp = 1)
+        val existingOtherLimitOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 900.0, "BTCZAR", orderTimestamp = 2)
+        val existingCheapLimitOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 1000.0, "BTCZAR", orderTimestamp = 2)
+        val limitOrder = LimitOrder("SELL", 1.0.toBigDecimal(), 700.0, "BTCZAR", orderTimestamp = 3)
+        market.handleLimitOrder(existingLimitOrder)
+        market.handleLimitOrder(existingOtherLimitOrder)
+        market.handleLimitOrder(existingCheapLimitOrder)
+        //when
+        market.handleLimitOrder(limitOrder)
+        //then
+        Assert.assertTrue(
+            market.retrieveCurrentOrderBook().retrieveBestBuyPrice() == null
+        )
+
+        Assert.assertTrue(
+            market.retrieveCurrentOrderBook().retrieveBestSellPrice()?.orderId == limitOrder.orderId
+        )
+
+        Assert.assertEquals(
+            limitOrder.quantity - (existingCheapLimitOrder.quantity + existingOtherLimitOrder.quantity + existingLimitOrder.quantity),
+            market.retrieveCurrentOrderBook().retrieveBestSellPrice()!!.quantity
+        )
+    }
 }

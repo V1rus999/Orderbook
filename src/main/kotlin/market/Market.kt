@@ -8,16 +8,14 @@ class Market(
     private val orderBook: OrderBook = OrderBook()
 ) {
     fun handleLimitOrder(order: LimitOrder): String {
-
         val topBuy = orderBook.retrieveBestBuyPrice()
         val topSell = orderBook.retrieveBestSellPrice()
 
-        val shouldOrderBeAdded = shouldOrderBeAddedToBookDirectly(order, topSell, topBuy)
+        val shouldOrderBeAdded = shouldOrderBeAddedToBookDirectly(order, topBuy, topSell)
         if (shouldOrderBeAdded) {
-            //This should return result of type ORDERMATCHED
+            //This should return result of type ORDERMATCHED. Probably need to calculate how much has been depleted
             orderBook.addNewTrade(order)
         } else {
-            //This should return result of type ORDERMATCHED??
             depleteOrder(order)
         }
 
@@ -59,24 +57,14 @@ class Market(
 
     private fun shouldOrderBeAddedToBookDirectly(
         order: LimitOrder,
+        topBuy: LimitOrder?,
         topSell: LimitOrder?,
-        topBuy: LimitOrder?
     ): Boolean {
-        if (topBuy == null && topSell == null) {
-            // This is a new trade in the book
-            return true
-        }
-
-        if (topBuy != null && order.side == "BUY" && topBuy.price >= order.price) {
-            // This is an additional trade at this price
-            return true
-        }
-
-        if (topSell != null && order.side == "SELL" && topSell.price <= order.price) {
-            // This is an additional trade at this price
-            return true
-        }
-        return false
+        return if (topBuy == null && topSell == null) {
+            true
+        } else if (topBuy != null && order.side == "BUY" && topBuy.price >= order.price) {
+            true
+        } else topSell != null && order.side == "SELL" && topSell.price <= order.price
     }
 
     fun retrieveCurrentOrderBook(): OrderBook = orderBook

@@ -24,8 +24,6 @@ data class OrderBook(
 ) {
     fun retrieveBestBuyPrice(): LimitOrder? = buySide.peek()
     fun retrieveBestSellPrice(): LimitOrder? = sellSide.peek()
-    fun removeTopBuy(): LimitOrder? = buySide.poll()
-    fun removeTopSell(): LimitOrder? = sellSide.poll()
 
     fun modifyTopLimit(newTopLimit: LimitOrder) {
         if (newTopLimit.side == "BUY") {
