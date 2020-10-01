@@ -61,19 +61,6 @@ class MarketMatchingEngine(
         }
     }
 
-    //TODO it might be better to do this directly in the orderbook
-    private fun shouldOrderBeAddedToBookDirectly(
-        incomingOrder: LimitOrder,
-        topBid: LimitOrder?,
-        topAsk: LimitOrder?,
-    ): Boolean {
-        return if (topBid == null && topAsk == null) {
-            true
-        } else if (topBid != null && incomingOrder.side == "BUY" && topBid.price >= incomingOrder.price) {
-            true
-        } else topAsk != null && incomingOrder.side == "SELL" && topAsk.price <= incomingOrder.price
-    }
-
     fun retrieveCurrentOrderBook(): OrderBook = orderBook
 
     fun retrieveOrderList(): List<LimitOrder> = completedOrders
