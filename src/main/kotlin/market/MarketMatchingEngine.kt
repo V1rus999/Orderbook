@@ -8,7 +8,7 @@ import Success
  * @Author: johannesC
  * @Date: 2020-09-28, Mon
  **/
-class Market(
+class MarketMatchingEngine(
     private val orderBook: OrderBook = OrderBook(),
     private val completedOrders: List<LimitOrder> = listOf()
 ) {

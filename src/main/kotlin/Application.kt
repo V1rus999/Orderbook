@@ -1,4 +1,4 @@
-import market.Market
+import market.MarketMatchingEngine
 import market.MarketApi
 
 /**
@@ -7,7 +7,7 @@ import market.MarketApi
  **/
 fun main() {
     val server = Server()
-    val marketApi = MarketApi(Market())
+    val marketApi = MarketApi(MarketMatchingEngine())
     server.startServer()
     server.attachPostRoute("/orders/limit", marketApi::receivedLimitOrderRequest)
     server.attachGetRoute("/*", marketApi::handleInaccessibleRoutes)
