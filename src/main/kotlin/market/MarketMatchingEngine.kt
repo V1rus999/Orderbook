@@ -1,8 +1,9 @@
 package market
 
-import java.lang.Exception
 import Result
 import Success
+import java.math.BigDecimal
+import java.util.*
 
 /**
  * @Author: johannesC
@@ -10,8 +11,10 @@ import Success
  **/
 class MarketMatchingEngine(
     private val orderBook: OrderBook = OrderBook(),
-    private val completedOrders: List<LimitOrder> = listOf()
+    private val completedOrders: ArrayDeque<CompletedOrder> = ArrayDeque()
 ) {
+    private val zero = 0.0.toBigDecimal()
+
     fun handleLimitOrder(incomingOrder: LimitOrder): Result<LimitOrderResult, Exception> {
         val shouldOrderBeAddedDirectly = orderBook.canOrderBeAddedToBookWithoutMatching(incomingOrder)
         return if (shouldOrderBeAddedDirectly) {
@@ -19,7 +22,7 @@ class MarketMatchingEngine(
             Success(AddedToBook(incomingOrder))
         } else {
             val remainingOrder = tryDepleteOrder(incomingOrder)
-            return if (remainingOrder.quantity > 0.0.toBigDecimal()) {
+            return if (remainingOrder.quantity > zero) {
                 Success(PartiallyMatchedAndAddedToBook(incomingOrder, remainingOrder))
             } else {
                 Success(FullyMatched(incomingOrder))
@@ -28,41 +31,50 @@ class MarketMatchingEngine(
     }
 
     private fun tryDepleteOrder(incomingOrder: LimitOrder): LimitOrder {
-        var orderBeingCompleted = incomingOrder.copy()
+        var orderBeingProcessed = incomingOrder.copy()
         var orderBookDepleted = false
 
-        while (orderBeingCompleted.quantity > 0.0.toBigDecimal() && !orderBookDepleted) {
+        while (orderBeingProcessed.quantity > zero && !orderBookDepleted) {
             val topBid = orderBook.topBid()
             val topAsk = orderBook.topAsk()
-            if (topBid != null && topBid.price >= orderBeingCompleted.price) {
-                orderBeingCompleted = matchOrderWithExistingBookOrder(orderBeingCompleted, topBid)
-            } else if (topAsk != null && topAsk.price <= orderBeingCompleted.price) {
-                orderBeingCompleted = matchOrderWithExistingBookOrder(orderBeingCompleted, topAsk)
+            if (topBid != null && topBid.price >= orderBeingProcessed.price) {
+                orderBeingProcessed = matchOrderWithExistingBookOrder(orderBeingProcessed, topBid)
+            } else if (topAsk != null && topAsk.price <= orderBeingProcessed.price) {
+                orderBeingProcessed = matchOrderWithExistingBookOrder(orderBeingProcessed, topAsk)
             } else {
-                //The order book has been depleted at a given price. Lets add whats left to the order book
-                //This should return result of type PARTIALMATCH
-                orderBook.addNewTrade(orderBeingCompleted)
+                orderBook.addNewTrade(orderBeingProcessed)
                 orderBookDepleted = true
             }
         }
-        return orderBeingCompleted
+        return orderBeingProcessed
     }
 
     private fun matchOrderWithExistingBookOrder(incomingOrder: LimitOrder, existingBookOrder: LimitOrder): LimitOrder {
         return if (existingBookOrder.quantity > incomingOrder.quantity) {
             val newTopLimit = existingBookOrder.copy(quantity = existingBookOrder.quantity - incomingOrder.quantity)
-            //TODO add these orders to a completed orders list
-            //TODO need to return a result object
             orderBook.modifyTopLimit(newTopLimit)
-            incomingOrder.copy(quantity = 0.toBigDecimal())
+            recordCompletedTrade(incomingOrder, incomingOrder.quantity, existingBookOrder.price)
+            incomingOrder.copy(quantity = zero)
         } else {
             orderBook.removeTopLimit(existingBookOrder)
+            recordCompletedTrade(incomingOrder, existingBookOrder.quantity, existingBookOrder.price)
             incomingOrder.copy(quantity = incomingOrder.quantity - existingBookOrder.quantity)
         }
     }
 
+    private fun recordCompletedTrade(incomingOrder: LimitOrder, quantity: BigDecimal, price: Double) {
+        completedOrders.add(
+            CompletedOrder(
+                quantity = quantity,
+                price = price,
+                side = incomingOrder.side,
+                incomingOrder.orderId
+            )
+        )
+    }
+
     fun retrieveCurrentOrderBook(): OrderBook = orderBook
 
-    fun retrieveOrderList(): List<LimitOrder> = completedOrders
+    fun retrieveOrderList(): ArrayDeque<CompletedOrder> = completedOrders
 
 }

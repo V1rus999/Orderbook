@@ -371,4 +371,124 @@ class MarketMatchingEngineTest {
             market.retrieveCurrentOrderBook().topAsk()!!.quantity
         )
     }
+
+    @Test
+    fun `when an order is filled make sure the market selects the best price`() {
+        //given
+        val market = MarketMatchingEngine()
+        val massiveBuy = LimitOrder("BUY", 0.3.toBigDecimal(), 2000.0, "BTCZAR")
+        val cheapSell = LimitOrder("SELL", 0.3.toBigDecimal(), 1000.0, "BTCZAR")
+        market.handleLimitOrder(massiveBuy)
+        //when
+        market.handleLimitOrder(cheapSell)
+
+        //then
+        val orderList = market.retrieveOrderList()
+        // Make sure that the SELL is hit at 2000 and not 1000
+        Assert.assertTrue(
+            orderList.first.price == massiveBuy.price
+        )
+    }
+
+    @Test
+    fun `when a single sell order is filled then record the single trade`() {
+        //given
+        val market = MarketMatchingEngine()
+        val existingLimitOrder = LimitOrder("BUY", 0.3.toBigDecimal(), 2000.0, "BTCZAR")
+        val limitOrder = LimitOrder("SELL", 0.3.toBigDecimal(), 1000.0, "BTCZAR")
+        market.handleLimitOrder(existingLimitOrder)
+        //when
+        market.handleLimitOrder(limitOrder)
+
+        //then
+        val orderList = market.retrieveOrderList()
+        Assert.assertTrue(
+            orderList.size == 1
+        )
+        Assert.assertTrue(
+            orderList.first.orderId == limitOrder.orderId
+        )
+        Assert.assertTrue(
+            orderList.first.quantity == limitOrder.quantity
+        )
+    }
+
+
+    @Test
+    fun `when a single buy order is partially filled then record all the trades at all price ranges`() {
+        //given
+        val market = MarketMatchingEngine()
+        val existingLimitOrder = LimitOrder("SELL", 0.3.toBigDecimal(), 1122.0, "BTCZAR", orderTimestamp = 1)
+        val existingOtherLimitOrder = LimitOrder("SELL", 0.2.toBigDecimal(), 1000.0, "BTCZAR", orderTimestamp = 2)
+        val existingCheapLimitOrder = LimitOrder("SELL", 0.2.toBigDecimal(), 800.0, "BTCZAR", orderTimestamp = 2)
+        val limitOrder = LimitOrder("BUY", 1.0.toBigDecimal(), 1200.0, "BTCZAR", orderTimestamp = 3)
+        market.handleLimitOrder(existingLimitOrder)
+        market.handleLimitOrder(existingOtherLimitOrder)
+        market.handleLimitOrder(existingCheapLimitOrder)
+        //when
+        market.handleLimitOrder(limitOrder)
+
+        //then
+        val orderList = market.retrieveOrderList()
+
+        fun assertQuantityAndPriceMatch(completedOrder: CompletedOrder, limitOrder: LimitOrder) {
+            Assert.assertTrue(
+                completedOrder.price == limitOrder.price
+            )
+            Assert.assertTrue(
+                completedOrder.quantity == limitOrder.quantity
+            )
+        }
+        Assert.assertTrue(
+            orderList.size == 3
+        )
+        Assert.assertTrue(
+            orderList.first.orderId == limitOrder.orderId
+        )
+        assertQuantityAndPriceMatch(orderList.first, existingCheapLimitOrder)
+        orderList.pop()
+        assertQuantityAndPriceMatch(orderList.first, existingOtherLimitOrder)
+        orderList.pop()
+        assertQuantityAndPriceMatch(orderList.first, existingLimitOrder)
+        orderList.pop()
+    }
+
+    @Test
+    fun `when a single sell order is partially filled then record all the trades at all price ranges`() {
+        //given
+        val market = MarketMatchingEngine()
+        val biggestBuyOrder = LimitOrder("BUY", 0.3.toBigDecimal(), 4000.0, "BTCZAR", orderTimestamp = 1)
+        val biggerBuyOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 3000.0, "BTCZAR", orderTimestamp = 2)
+        val smallestBuyOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 2000.0, "BTCZAR", orderTimestamp = 2)
+        val limitOrder = LimitOrder("SELL", 1.0.toBigDecimal(), 1500.0, "BTCZAR", orderTimestamp = 3)
+        market.handleLimitOrder(biggestBuyOrder)
+        market.handleLimitOrder(biggerBuyOrder)
+        market.handleLimitOrder(smallestBuyOrder)
+        //when
+        market.handleLimitOrder(limitOrder)
+
+        //then
+        val orderList = market.retrieveOrderList()
+
+        fun assertQuantityAndPriceMatch(completedOrder: CompletedOrder, limitOrder: LimitOrder) {
+            Assert.assertTrue(
+                completedOrder.price == limitOrder.price
+            )
+            Assert.assertTrue(
+                completedOrder.quantity == limitOrder.quantity
+            )
+        }
+        Assert.assertTrue(
+            orderList.size == 3
+        )
+        Assert.assertTrue(
+            orderList.first.orderId == limitOrder.orderId
+        )
+        assertQuantityAndPriceMatch(orderList.first, biggestBuyOrder)
+        orderList.pop()
+        assertQuantityAndPriceMatch(orderList.first, biggerBuyOrder)
+        orderList.pop()
+        assertQuantityAndPriceMatch(orderList.first, smallestBuyOrder)
+        orderList.pop()
+    }
 }
