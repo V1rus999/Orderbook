@@ -2,22 +2,6 @@ package market
 
 import java.util.*
 
-private val askComparator: Comparator<LimitOrder> = Comparator<LimitOrder> { first, second ->
-    if (first.price != second.price) {
-        first.price.compareTo(second.price)
-    } else {
-        first.orderTimestamp.compareTo(second.orderTimestamp)
-    }
-}
-
-private val bidComparator: Comparator<LimitOrder> = Comparator<LimitOrder> { first, second ->
-    if (first.price != second.price) {
-        -first.price.compareTo(second.price)
-    } else {
-        first.orderTimestamp.compareTo(second.orderTimestamp)
-    }
-}
-
 data class OrderBook(
     val currentBids: PriorityQueue<LimitOrder> = PriorityQueue(bidComparator),
     val currentAsks: PriorityQueue<LimitOrder> = PriorityQueue(askComparator)
@@ -52,3 +36,18 @@ data class OrderBook(
     }
 }
 
+private val askComparator: Comparator<LimitOrder> = Comparator<LimitOrder> { first, second ->
+    if (first.price != second.price) {
+        first.price.compareTo(second.price)
+    } else {
+        first.orderTimestamp.compareTo(second.orderTimestamp)
+    }
+}
+
+private val bidComparator: Comparator<LimitOrder> = Comparator<LimitOrder> { first, second ->
+    if (first.price != second.price) {
+        -first.price.compareTo(second.price)
+    } else {
+        first.orderTimestamp.compareTo(second.orderTimestamp)
+    }
+}

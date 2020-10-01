@@ -9,7 +9,8 @@ class MarketApi(private val market: Market = Market(), private val gson: Gson = 
         println("Received limit order request with body:")
         println(requestStringBody)
         val transformedBody = requestStringBody.transformStringBodyToObj<LimitOrder>(LimitOrder::class)
-        return market.handleLimitOrder(transformedBody)
+        //TODO This needs to transform the market result into a standard http response
+        return market.handleLimitOrder(transformedBody).toString()
     }
 
     private fun <T> String.transformStringBodyToObj(clazz: KClass<out Any>): T {

@@ -1,5 +1,9 @@
 package market
 
+import java.lang.Exception
+import Result
+import Success
+
 /**
  * @Author: johannesC
  * @Date: 2020-09-28, Mon
@@ -8,22 +12,25 @@ class Market(
     private val orderBook: OrderBook = OrderBook(),
     private val completedOrders: List<LimitOrder> = listOf()
 ) {
-    fun handleLimitOrder(incomingOrder: LimitOrder): String {
+    fun handleLimitOrder(incomingOrder: LimitOrder): Result<LimitOrderResult, Exception> {
         val topBid = orderBook.topBid()
         val topAsk = orderBook.topAsk()
 
         val shouldOrderBeAdded = shouldOrderBeAddedToBookDirectly(incomingOrder, topBid, topAsk)
-        if (shouldOrderBeAdded) {
-            //This should return result of type ORDERMATCHED. Probably need to calculate how much has been depleted
+        return if (shouldOrderBeAdded) {
             orderBook.addNewTrade(incomingOrder)
+            Success(AddedToBook(incomingOrder))
         } else {
-            depleteOrder(incomingOrder)
+            val remainingOrder = tryDepleteOrder(incomingOrder)
+            return if (remainingOrder.quantity > 0.0.toBigDecimal()) {
+                Success(PartiallyMatchedAndAddedToBook(incomingOrder, remainingOrder))
+            } else {
+                Success(FullyMatched(incomingOrder))
+            }
         }
-
-        return "Done"
     }
 
-    private fun depleteOrder(incomingOrder: LimitOrder) {
+    private fun tryDepleteOrder(incomingOrder: LimitOrder): LimitOrder {
         var orderBeingCompleted = incomingOrder.copy()
         var orderBookDepleted = false
 
@@ -41,6 +48,7 @@ class Market(
                 orderBookDepleted = true
             }
         }
+        return orderBeingCompleted
     }
 
     private fun matchOrderWithExistingBookOrder(incomingOrder: LimitOrder, existingBookOrder: LimitOrder): LimitOrder {

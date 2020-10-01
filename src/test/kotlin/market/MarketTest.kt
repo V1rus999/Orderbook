@@ -1,5 +1,6 @@
 package market
 
+import Success
 import org.junit.Assert
 import org.junit.Test
 
@@ -10,14 +11,71 @@ import org.junit.Test
 class MarketTest {
 
     @Test
-    fun `when handle limit order then return done`() {
+    fun `when handle limit order and order is added to the book then return AddedToBook`() {
         //given
         val market = Market()
         val limitOrder = LimitOrder("SOMESIDE", 0.1.toBigDecimal(), 1000.0, "BTCZAR")
-        //when
-        val result = market.handleLimitOrder(limitOrder)
         //then
-        Assert.assertEquals("Done", result)
+        when (val result = market.handleLimitOrder(limitOrder)) {
+            is Success -> Assert.assertTrue(result.value is AddedToBook)
+            else -> Assert.fail()
+        }
+    }
+
+    @Test
+    fun `when handle limit order and order is fully matched then return FullyMatched`() {
+        //given
+        val market = Market()
+        val limitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0, "BTCZAR")
+        val anotherLimitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0, "BTCZAR")
+        val sellOrder = LimitOrder("SELL", 0.1.toBigDecimal(), 1000.0, "BTCZAR")
+        //then
+        when (val result = market.handleLimitOrder(limitOrder)) {
+            is Success -> Assert.assertTrue(result.value is AddedToBook)
+            else -> Assert.fail()
+        }
+
+        when (val result = market.handleLimitOrder(anotherLimitOrder)) {
+            is Success -> Assert.assertTrue(result.value is AddedToBook)
+            else -> Assert.fail()
+        }
+
+        when (val result = market.handleLimitOrder(sellOrder)) {
+            is Success -> Assert.assertTrue(result.value is FullyMatched)
+            else -> Assert.fail()
+        }
+    }
+
+    @Test
+    fun `when handle limit order and order eats up bid wall then return PartiallyMatched`() {
+        //given
+        val market = Market()
+        val limitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0, "BTCZAR")
+        val anotherLimitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0, "BTCZAR")
+        val sellOrder = LimitOrder("SELL", 0.3.toBigDecimal(), 1000.0, "BTCZAR")
+        //then
+        when (val result = market.handleLimitOrder(limitOrder)) {
+            is Success -> Assert.assertTrue(result.value is AddedToBook)
+            else -> Assert.fail()
+        }
+
+        when (val result = market.handleLimitOrder(anotherLimitOrder)) {
+            is Success -> Assert.assertTrue(result.value is AddedToBook)
+            else -> Assert.fail()
+        }
+
+        when (val result = market.handleLimitOrder(sellOrder)) {
+            is Success -> {
+                Assert.assertTrue(result.value is PartiallyMatchedAndAddedToBook)
+                val originalOrder = (result.value as PartiallyMatchedAndAddedToBook).original
+                val depletedOrder = (result.value as PartiallyMatchedAndAddedToBook).depletedOrder
+                Assert.assertEquals(
+                    originalOrder.quantity - (limitOrder.quantity + anotherLimitOrder.quantity),
+                    depletedOrder.quantity
+                )
+            }
+            else -> Assert.fail()
+        }
     }
 
     @Test
