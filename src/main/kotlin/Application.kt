@@ -10,5 +10,6 @@ fun main() {
     val marketApi = MarketApi(MarketMatchingEngine())
     server.startServer()
     server.attachPostRoute("/orders/limit", marketApi::receivedLimitOrderRequest)
+    server.attachGetRoute("/orders/trades", marketApi::receivedTradesListRequest)
     server.attachGetRoute("/*", marketApi::handleInaccessibleRoutes)
 }
