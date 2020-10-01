@@ -2,7 +2,7 @@ package market
 
 import java.util.*
 
-private val sellComparator: Comparator<LimitOrder> = Comparator<LimitOrder> { first, second ->
+private val askComparator: Comparator<LimitOrder> = Comparator<LimitOrder> { first, second ->
     if (first.price != second.price) {
         first.price.compareTo(second.price)
     } else {
@@ -10,7 +10,7 @@ private val sellComparator: Comparator<LimitOrder> = Comparator<LimitOrder> { fi
     }
 }
 
-private val buyComparator: Comparator<LimitOrder> = Comparator<LimitOrder> { first, second ->
+private val bidComparator: Comparator<LimitOrder> = Comparator<LimitOrder> { first, second ->
     if (first.price != second.price) {
         -first.price.compareTo(second.price)
     } else {
@@ -19,35 +19,35 @@ private val buyComparator: Comparator<LimitOrder> = Comparator<LimitOrder> { fir
 }
 
 data class OrderBook(
-    val buySide: PriorityQueue<LimitOrder> = PriorityQueue(buyComparator),
-    val sellSide: PriorityQueue<LimitOrder> = PriorityQueue(sellComparator)
+    val currentBids: PriorityQueue<LimitOrder> = PriorityQueue(bidComparator),
+    val currentAsks: PriorityQueue<LimitOrder> = PriorityQueue(askComparator)
 ) {
-    fun retrieveBestBuyPrice(): LimitOrder? = buySide.peek()
-    fun retrieveBestSellPrice(): LimitOrder? = sellSide.peek()
+    fun topBid(): LimitOrder? = currentBids.peek()
+    fun topAsk(): LimitOrder? = currentAsks.peek()
 
     fun modifyTopLimit(newTopLimit: LimitOrder) {
         if (newTopLimit.side == "BUY") {
-            buySide.poll()
+            currentBids.poll()
             addNewTrade(newTopLimit)
         } else {
-            sellSide.poll()
+            currentAsks.poll()
             addNewTrade(newTopLimit)
         }
     }
 
     fun removeTopLimit(topLimitToRemove: LimitOrder) {
         if (topLimitToRemove.side == "BUY") {
-            buySide.poll()
+            currentBids.poll()
         } else {
-            sellSide.poll()
+            currentAsks.poll()
         }
     }
 
     fun addNewTrade(order: LimitOrder) {
         if (order.side == "BUY") {
-            buySide.add(order)
+            currentBids.add(order)
         } else {
-            sellSide.add(order)
+            currentAsks.add(order)
         }
     }
 }

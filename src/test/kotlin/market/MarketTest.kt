@@ -30,7 +30,7 @@ class MarketTest {
         //then
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().sellSide.peek().orderId
+            market.retrieveCurrentOrderBook().currentAsks.peek().orderId
         )
     }
 
@@ -44,7 +44,7 @@ class MarketTest {
         //then
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().buySide.peek().orderId
+            market.retrieveCurrentOrderBook().currentBids.peek().orderId
         )
     }
 
@@ -60,12 +60,12 @@ class MarketTest {
         //then
         Assert.assertEquals(
             existingLimitOrder.orderId,
-            market.retrieveCurrentOrderBook().sellSide.poll().orderId
+            market.retrieveCurrentOrderBook().currentAsks.poll().orderId
         )
 
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().sellSide.peek().orderId
+            market.retrieveCurrentOrderBook().currentAsks.peek().orderId
         )
     }
 
@@ -82,12 +82,12 @@ class MarketTest {
         //then
         Assert.assertEquals(
             existingLimitOrder.orderId,
-            market.retrieveCurrentOrderBook().sellSide.poll().orderId
+            market.retrieveCurrentOrderBook().currentAsks.poll().orderId
         )
 
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().sellSide.peek().orderId
+            market.retrieveCurrentOrderBook().currentAsks.peek().orderId
         )
     }
 
@@ -101,8 +101,8 @@ class MarketTest {
         //when
         market.handleLimitOrder(buyLimitOrder)
         //then
-        Assert.assertTrue(market.retrieveCurrentOrderBook().sellSide.size == 0)
-        Assert.assertTrue(market.retrieveCurrentOrderBook().buySide.size == 0)
+        Assert.assertTrue(market.retrieveCurrentOrderBook().currentAsks.size == 0)
+        Assert.assertTrue(market.retrieveCurrentOrderBook().currentBids.size == 0)
     }
 
     @Test
@@ -115,8 +115,8 @@ class MarketTest {
         //when
         market.handleLimitOrder(sellLimitOrder)
         //then
-        Assert.assertTrue(market.retrieveCurrentOrderBook().sellSide.size == 0)
-        Assert.assertTrue(market.retrieveCurrentOrderBook().buySide.size == 0)
+        Assert.assertTrue(market.retrieveCurrentOrderBook().currentAsks.size == 0)
+        Assert.assertTrue(market.retrieveCurrentOrderBook().currentBids.size == 0)
     }
 
     @Test
@@ -131,11 +131,11 @@ class MarketTest {
         //then
         Assert.assertEquals(
             existingBuyLimitOrder.orderId,
-            market.retrieveCurrentOrderBook().buySide.peek().orderId
+            market.retrieveCurrentOrderBook().currentBids.peek().orderId
         )
         Assert.assertEquals(
             existingBuyLimitOrder.quantity - sellLimitOrder.quantity,
-            market.retrieveCurrentOrderBook().buySide.peek().quantity
+            market.retrieveCurrentOrderBook().currentBids.peek().quantity
         )
     }
 
@@ -153,11 +153,11 @@ class MarketTest {
         //then
         Assert.assertEquals(
             existingSecondBuyLimitOrder.orderId,
-            market.retrieveCurrentOrderBook().buySide.peek().orderId
+            market.retrieveCurrentOrderBook().currentBids.peek().orderId
         )
         Assert.assertEquals(
             (existingBuyLimitOrder.quantity + existingSecondBuyLimitOrder.quantity) - sellLimitOrder.quantity,
-            market.retrieveCurrentOrderBook().buySide.peek().quantity
+            market.retrieveCurrentOrderBook().currentBids.peek().quantity
         )
     }
 
@@ -173,12 +173,12 @@ class MarketTest {
         //then
         Assert.assertEquals(
             existingLimitOrder.orderId,
-            market.retrieveCurrentOrderBook().buySide.poll().orderId
+            market.retrieveCurrentOrderBook().currentBids.poll().orderId
         )
 
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().buySide.peek().orderId
+            market.retrieveCurrentOrderBook().currentBids.peek().orderId
         )
     }
 
@@ -194,12 +194,12 @@ class MarketTest {
         //then
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().sellSide.peek().orderId
+            market.retrieveCurrentOrderBook().currentAsks.peek().orderId
         )
 
         Assert.assertEquals(
             limitOrder.quantity - existingLimitOrder.quantity,
-            market.retrieveCurrentOrderBook().sellSide.peek().quantity
+            market.retrieveCurrentOrderBook().currentAsks.peek().quantity
         )
     }
 
@@ -219,12 +219,12 @@ class MarketTest {
         //then
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().sellSide.peek().orderId
+            market.retrieveCurrentOrderBook().currentAsks.peek().orderId
         )
 
         Assert.assertEquals(
             limitOrder.quantity - (existingLimitOrder.quantity + existingOtherLimitOrder.quantity),
-            market.retrieveCurrentOrderBook().sellSide.peek().quantity
+            market.retrieveCurrentOrderBook().currentAsks.peek().quantity
         )
     }
 
@@ -244,17 +244,17 @@ class MarketTest {
         //then
         Assert.assertEquals(
             existingLimitOrder.orderId,
-            market.retrieveCurrentOrderBook().sellSide.peek().orderId
+            market.retrieveCurrentOrderBook().currentAsks.peek().orderId
         )
 
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().buySide.peek().orderId
+            market.retrieveCurrentOrderBook().currentBids.peek().orderId
         )
 
         Assert.assertEquals(
             limitOrder.quantity - (existingCheapLimitOrder.quantity + existingOtherLimitOrder.quantity),
-            market.retrieveCurrentOrderBook().buySide.peek().quantity
+            market.retrieveCurrentOrderBook().currentBids.peek().quantity
         )
     }
 
@@ -273,16 +273,16 @@ class MarketTest {
         market.handleLimitOrder(limitOrder)
         //then
         Assert.assertTrue(
-            market.retrieveCurrentOrderBook().retrieveBestSellPrice() == null
+            market.retrieveCurrentOrderBook().topAsk() == null
         )
 
         Assert.assertTrue(
-            market.retrieveCurrentOrderBook().retrieveBestBuyPrice()?.orderId == limitOrder.orderId
+            market.retrieveCurrentOrderBook().topBid()?.orderId == limitOrder.orderId
         )
 
         Assert.assertEquals(
             limitOrder.quantity - (existingCheapLimitOrder.quantity + existingOtherLimitOrder.quantity + existingLimitOrder.quantity),
-            market.retrieveCurrentOrderBook().retrieveBestBuyPrice()!!.quantity
+            market.retrieveCurrentOrderBook().topBid()!!.quantity
         )
     }
 
@@ -301,16 +301,16 @@ class MarketTest {
         market.handleLimitOrder(limitOrder)
         //then
         Assert.assertTrue(
-            market.retrieveCurrentOrderBook().retrieveBestBuyPrice() == null
+            market.retrieveCurrentOrderBook().topBid() == null
         )
 
         Assert.assertTrue(
-            market.retrieveCurrentOrderBook().retrieveBestSellPrice()?.orderId == limitOrder.orderId
+            market.retrieveCurrentOrderBook().topAsk()?.orderId == limitOrder.orderId
         )
 
         Assert.assertEquals(
             limitOrder.quantity - (existingCheapLimitOrder.quantity + existingOtherLimitOrder.quantity + existingLimitOrder.quantity),
-            market.retrieveCurrentOrderBook().retrieveBestSellPrice()!!.quantity
+            market.retrieveCurrentOrderBook().topAsk()!!.quantity
         )
     }
 }

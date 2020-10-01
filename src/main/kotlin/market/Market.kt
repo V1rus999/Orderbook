@@ -9,10 +9,10 @@ class Market(
     private val completedOrders: List<LimitOrder> = listOf()
 ) {
     fun handleLimitOrder(incomingOrder: LimitOrder): String {
-        val topBuy = orderBook.retrieveBestBuyPrice()
-        val topSell = orderBook.retrieveBestSellPrice()
+        val topBid = orderBook.topBid()
+        val topAsk = orderBook.topAsk()
 
-        val shouldOrderBeAdded = shouldOrderBeAddedToBookDirectly(incomingOrder, topBuy, topSell)
+        val shouldOrderBeAdded = shouldOrderBeAddedToBookDirectly(incomingOrder, topBid, topAsk)
         if (shouldOrderBeAdded) {
             //This should return result of type ORDERMATCHED. Probably need to calculate how much has been depleted
             orderBook.addNewTrade(incomingOrder)
@@ -28,12 +28,12 @@ class Market(
         var orderBookDepleted = false
 
         while (orderBeingCompleted.quantity > 0.0.toBigDecimal() && !orderBookDepleted) {
-            val topBuy = orderBook.retrieveBestBuyPrice()
-            val topSell = orderBook.retrieveBestSellPrice()
-            if (topBuy != null && topBuy.price >= orderBeingCompleted.price) {
-                orderBeingCompleted = matchOrderWithExistingBookOrder(orderBeingCompleted, topBuy)
-            } else if (topSell != null && topSell.price <= orderBeingCompleted.price) {
-                orderBeingCompleted = matchOrderWithExistingBookOrder(orderBeingCompleted, topSell)
+            val topBid = orderBook.topBid()
+            val topAsk = orderBook.topAsk()
+            if (topBid != null && topBid.price >= orderBeingCompleted.price) {
+                orderBeingCompleted = matchOrderWithExistingBookOrder(orderBeingCompleted, topBid)
+            } else if (topAsk != null && topAsk.price <= orderBeingCompleted.price) {
+                orderBeingCompleted = matchOrderWithExistingBookOrder(orderBeingCompleted, topAsk)
             } else {
                 //The order book has been depleted at a given price. Lets add whats left to the order book
                 //This should return result of type PARTIALMATCH
@@ -45,10 +45,10 @@ class Market(
 
     private fun matchOrderWithExistingBookOrder(incomingOrder: LimitOrder, existingBookOrder: LimitOrder): LimitOrder {
         return if (existingBookOrder.quantity > incomingOrder.quantity) {
-            val newTopBuy = existingBookOrder.copy(quantity = existingBookOrder.quantity - incomingOrder.quantity)
+            val newTopLimit = existingBookOrder.copy(quantity = existingBookOrder.quantity - incomingOrder.quantity)
             //TODO add these orders to a completed orders list
             //TODO need to return a result object
-            orderBook.modifyTopLimit(newTopBuy)
+            orderBook.modifyTopLimit(newTopLimit)
             incomingOrder.copy(quantity = 0.toBigDecimal())
         } else {
             orderBook.removeTopLimit(existingBookOrder)
@@ -59,14 +59,14 @@ class Market(
     //TODO it might be better to do this directly in the orderbook
     private fun shouldOrderBeAddedToBookDirectly(
         incomingOrder: LimitOrder,
-        topBuy: LimitOrder?,
-        topSell: LimitOrder?,
+        topBid: LimitOrder?,
+        topAsk: LimitOrder?,
     ): Boolean {
-        return if (topBuy == null && topSell == null) {
+        return if (topBid == null && topAsk == null) {
             true
-        } else if (topBuy != null && incomingOrder.side == "BUY" && topBuy.price >= incomingOrder.price) {
+        } else if (topBid != null && incomingOrder.side == "BUY" && topBid.price >= incomingOrder.price) {
             true
-        } else topSell != null && incomingOrder.side == "SELL" && topSell.price <= incomingOrder.price
+        } else topAsk != null && incomingOrder.side == "SELL" && topAsk.price <= incomingOrder.price
     }
 
     fun retrieveCurrentOrderBook(): OrderBook = orderBook
