@@ -13,11 +13,8 @@ class Market(
     private val completedOrders: List<LimitOrder> = listOf()
 ) {
     fun handleLimitOrder(incomingOrder: LimitOrder): Result<LimitOrderResult, Exception> {
-        val topBid = orderBook.topBid()
-        val topAsk = orderBook.topAsk()
-
-        val shouldOrderBeAdded = shouldOrderBeAddedToBookDirectly(incomingOrder, topBid, topAsk)
-        return if (shouldOrderBeAdded) {
+        val shouldOrderBeAddedDirectly = orderBook.canOrderBeAddedToBookWithoutMatching(incomingOrder)
+        return if (shouldOrderBeAddedDirectly) {
             orderBook.addNewTrade(incomingOrder)
             Success(AddedToBook(incomingOrder))
         } else {
