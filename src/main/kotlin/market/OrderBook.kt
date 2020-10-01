@@ -3,8 +3,8 @@ package market
 import java.util.*
 
 data class OrderBook(
-    val currentBids: PriorityQueue<LimitOrder> = PriorityQueue(bidComparator),
-    val currentAsks: PriorityQueue<LimitOrder> = PriorityQueue(askComparator)
+    private val currentBids: PriorityQueue<LimitOrder> = PriorityQueue(bidComparator),
+    private val currentAsks: PriorityQueue<LimitOrder> = PriorityQueue(askComparator)
 ) {
     fun topBid(): LimitOrder? = currentBids.peek()
     fun topAsk(): LimitOrder? = currentAsks.peek()
@@ -19,8 +19,8 @@ data class OrderBook(
         }
     }
 
-    fun removeTopLimit(topLimitToRemove: LimitOrder) {
-        if (topLimitToRemove.side == "BUY") {
+    fun removeTopLimitForSide(side: String) {
+        if (side == "BUY") {
             currentBids.poll()
         } else {
             currentAsks.poll()

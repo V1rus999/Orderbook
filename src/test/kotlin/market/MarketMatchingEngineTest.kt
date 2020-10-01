@@ -88,7 +88,7 @@ class MarketMatchingEngineTest {
         //then
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().currentAsks.peek().orderId
+            market.retrieveCurrentOrderBook().topAsk()?.orderId
         )
     }
 
@@ -102,7 +102,7 @@ class MarketMatchingEngineTest {
         //then
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().currentBids.peek().orderId
+            market.retrieveCurrentOrderBook().topBid()?.orderId
         )
     }
 
@@ -118,12 +118,14 @@ class MarketMatchingEngineTest {
         //then
         Assert.assertEquals(
             existingLimitOrder.orderId,
-            market.retrieveCurrentOrderBook().currentAsks.poll().orderId
+            market.retrieveCurrentOrderBook().topAsk()?.orderId
         )
+
+        market.retrieveCurrentOrderBook().removeTopLimitForSide("SELL")
 
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().currentAsks.peek().orderId
+            market.retrieveCurrentOrderBook().topAsk()?.orderId
         )
     }
 
@@ -140,12 +142,14 @@ class MarketMatchingEngineTest {
         //then
         Assert.assertEquals(
             existingLimitOrder.orderId,
-            market.retrieveCurrentOrderBook().currentAsks.poll().orderId
+            market.retrieveCurrentOrderBook().topAsk()?.orderId
         )
+
+        market.retrieveCurrentOrderBook().removeTopLimitForSide("SELL")
 
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().currentAsks.peek().orderId
+            market.retrieveCurrentOrderBook().topAsk()?.orderId
         )
     }
 
@@ -159,8 +163,8 @@ class MarketMatchingEngineTest {
         //when
         market.handleLimitOrder(buyLimitOrder)
         //then
-        Assert.assertTrue(market.retrieveCurrentOrderBook().currentAsks.size == 0)
-        Assert.assertTrue(market.retrieveCurrentOrderBook().currentBids.size == 0)
+        Assert.assertTrue(market.retrieveCurrentOrderBook().topAsk() == null)
+        Assert.assertTrue(market.retrieveCurrentOrderBook().topBid() == null)
     }
 
     @Test
@@ -173,8 +177,8 @@ class MarketMatchingEngineTest {
         //when
         market.handleLimitOrder(sellLimitOrder)
         //then
-        Assert.assertTrue(market.retrieveCurrentOrderBook().currentAsks.size == 0)
-        Assert.assertTrue(market.retrieveCurrentOrderBook().currentBids.size == 0)
+        Assert.assertTrue(market.retrieveCurrentOrderBook().topAsk() == null)
+        Assert.assertTrue(market.retrieveCurrentOrderBook().topBid() == null)
     }
 
     @Test
@@ -189,11 +193,11 @@ class MarketMatchingEngineTest {
         //then
         Assert.assertEquals(
             existingBuyLimitOrder.orderId,
-            market.retrieveCurrentOrderBook().currentBids.peek().orderId
+            market.retrieveCurrentOrderBook().topBid()?.orderId
         )
         Assert.assertEquals(
             existingBuyLimitOrder.quantity - sellLimitOrder.quantity,
-            market.retrieveCurrentOrderBook().currentBids.peek().quantity
+            market.retrieveCurrentOrderBook().topBid()?.quantity
         )
     }
 
@@ -211,11 +215,11 @@ class MarketMatchingEngineTest {
         //then
         Assert.assertEquals(
             existingSecondBuyLimitOrder.orderId,
-            market.retrieveCurrentOrderBook().currentBids.peek().orderId
+            market.retrieveCurrentOrderBook().topBid()?.orderId
         )
         Assert.assertEquals(
             (existingBuyLimitOrder.quantity + existingSecondBuyLimitOrder.quantity) - sellLimitOrder.quantity,
-            market.retrieveCurrentOrderBook().currentBids.peek().quantity
+            market.retrieveCurrentOrderBook().topBid()?.quantity
         )
     }
 
@@ -231,12 +235,12 @@ class MarketMatchingEngineTest {
         //then
         Assert.assertEquals(
             existingLimitOrder.orderId,
-            market.retrieveCurrentOrderBook().currentBids.poll().orderId
+            market.retrieveCurrentOrderBook().topBid()?.orderId
         )
-
+        market.retrieveCurrentOrderBook().removeTopLimitForSide("BUY")
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().currentBids.peek().orderId
+            market.retrieveCurrentOrderBook().topBid()?.orderId
         )
     }
 
@@ -252,12 +256,12 @@ class MarketMatchingEngineTest {
         //then
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().currentAsks.peek().orderId
+            market.retrieveCurrentOrderBook().topAsk()?.orderId
         )
 
         Assert.assertEquals(
             limitOrder.quantity - existingLimitOrder.quantity,
-            market.retrieveCurrentOrderBook().currentAsks.peek().quantity
+            market.retrieveCurrentOrderBook().topAsk()?.quantity
         )
     }
 
@@ -277,12 +281,12 @@ class MarketMatchingEngineTest {
         //then
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().currentAsks.peek().orderId
+            market.retrieveCurrentOrderBook().topAsk()?.orderId
         )
 
         Assert.assertEquals(
             limitOrder.quantity - (existingLimitOrder.quantity + existingOtherLimitOrder.quantity),
-            market.retrieveCurrentOrderBook().currentAsks.peek().quantity
+            market.retrieveCurrentOrderBook().topAsk()?.quantity
         )
     }
 
@@ -302,17 +306,17 @@ class MarketMatchingEngineTest {
         //then
         Assert.assertEquals(
             existingLimitOrder.orderId,
-            market.retrieveCurrentOrderBook().currentAsks.peek().orderId
+            market.retrieveCurrentOrderBook().topAsk()?.orderId
         )
 
         Assert.assertEquals(
             limitOrder.orderId,
-            market.retrieveCurrentOrderBook().currentBids.peek().orderId
+            market.retrieveCurrentOrderBook().topBid()?.orderId
         )
 
         Assert.assertEquals(
             limitOrder.quantity - (existingCheapLimitOrder.quantity + existingOtherLimitOrder.quantity),
-            market.retrieveCurrentOrderBook().currentBids.peek().quantity
+            market.retrieveCurrentOrderBook().topBid()?.quantity
         )
     }
 

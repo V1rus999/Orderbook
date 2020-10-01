@@ -56,7 +56,7 @@ class MarketMatchingEngine(
             recordCompletedTrade(incomingOrder, incomingOrder.quantity, existingBookOrder.price)
             incomingOrder.copy(quantity = zero)
         } else {
-            orderBook.removeTopLimit(existingBookOrder)
+            orderBook.removeTopLimitForSide(existingBookOrder.side)
             recordCompletedTrade(incomingOrder, existingBookOrder.quantity, existingBookOrder.price)
             incomingOrder.copy(quantity = incomingOrder.quantity - existingBookOrder.quantity)
         }
