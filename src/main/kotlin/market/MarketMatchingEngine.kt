@@ -62,7 +62,7 @@ class MarketMatchingEngine(
         }
     }
 
-    private fun recordCompletedTrade(incomingOrder: LimitOrder, quantity: BigDecimal, price: Double) {
+    private fun recordCompletedTrade(incomingOrder: LimitOrder, quantity: BigDecimal, price: BigDecimal) {
         completedOrders.add(
             CompletedOrder(
                 quantity = quantity,

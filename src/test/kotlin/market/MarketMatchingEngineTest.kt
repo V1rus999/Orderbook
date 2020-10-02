@@ -14,7 +14,7 @@ class MarketMatchingEngineTest {
     fun `when handle limit order and order is added to the book then return AddedToBook`() {
         //given
         val market = MarketMatchingEngine()
-        val limitOrder = LimitOrder("SOMESIDE", 0.1.toBigDecimal(), 1000.0, "BTCZAR")
+        val limitOrder = LimitOrder("SOMESIDE", 0.1.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
         //then
         when (val result = market.handleLimitOrder(limitOrder)) {
             is Success -> Assert.assertTrue(result.value is AddedToBook)
@@ -26,9 +26,9 @@ class MarketMatchingEngineTest {
     fun `when handle limit order and order is fully matched then return FullyMatched`() {
         //given
         val market = MarketMatchingEngine()
-        val limitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0, "BTCZAR")
-        val anotherLimitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0, "BTCZAR")
-        val sellOrder = LimitOrder("SELL", 0.1.toBigDecimal(), 1000.0, "BTCZAR")
+        val limitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
+        val anotherLimitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
+        val sellOrder = LimitOrder("SELL", 0.1.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
         //then
         when (val result = market.handleLimitOrder(limitOrder)) {
             is Success -> Assert.assertTrue(result.value is AddedToBook)
@@ -50,9 +50,9 @@ class MarketMatchingEngineTest {
     fun `when handle limit order and order eats up bid wall then return PartiallyMatched`() {
         //given
         val market = MarketMatchingEngine()
-        val limitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0, "BTCZAR")
-        val anotherLimitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0, "BTCZAR")
-        val sellOrder = LimitOrder("SELL", 0.3.toBigDecimal(), 1000.0, "BTCZAR")
+        val limitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
+        val anotherLimitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
+        val sellOrder = LimitOrder("SELL", 0.3.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
         //then
         when (val result = market.handleLimitOrder(limitOrder)) {
             is Success -> Assert.assertTrue(result.value is AddedToBook)
@@ -82,7 +82,7 @@ class MarketMatchingEngineTest {
     fun `when sell order on new price then add new order to book`() {
         //given
         val market = MarketMatchingEngine()
-        val limitOrder = LimitOrder("SELL", 0.1.toBigDecimal(), 1000.0, "BTCZAR")
+        val limitOrder = LimitOrder("SELL", 0.1.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
         //when
         market.handleLimitOrder(limitOrder)
         //then
@@ -96,7 +96,7 @@ class MarketMatchingEngineTest {
     fun `when buy order on new price then add new order to book`() {
         //given
         val market = MarketMatchingEngine()
-        val limitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0, "BTCZAR")
+        val limitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
         //when
         market.handleLimitOrder(limitOrder)
         //then
@@ -110,8 +110,8 @@ class MarketMatchingEngineTest {
     fun `when sell order on new price and book already had a value then add new order to book`() {
         //given
         val market = MarketMatchingEngine()
-        val existingLimitOrder = LimitOrder("SELL", 0.3.toBigDecimal(), 1000.0, "BTCZAR")
-        val limitOrder = LimitOrder("SELL", 0.1.toBigDecimal(), 2000.0, "BTCZAR")
+        val existingLimitOrder = LimitOrder("SELL", 0.3.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
+        val limitOrder = LimitOrder("SELL", 0.1.toBigDecimal(), 2000.0.toBigDecimal(), "BTCZAR")
         market.handleLimitOrder(existingLimitOrder)
         //when
         market.handleLimitOrder(limitOrder)
@@ -134,8 +134,8 @@ class MarketMatchingEngineTest {
         //given
         val market = MarketMatchingEngine()
         val existingLimitOrder =
-            LimitOrder("SELL", 0.3.toBigDecimal(), 1000.0, "BTCZAR", orderTimestamp = 1601446014449)
-        val limitOrder = LimitOrder("SELL", 0.1.toBigDecimal(), 1000.0, "BTCZAR", orderTimestamp = 1601446074910)
+            LimitOrder("SELL", 0.3.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR", orderTimestamp = 1601446014449)
+        val limitOrder = LimitOrder("SELL", 0.1.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR", orderTimestamp = 1601446074910)
         market.handleLimitOrder(existingLimitOrder)
         //when
         market.handleLimitOrder(limitOrder)
@@ -157,8 +157,8 @@ class MarketMatchingEngineTest {
     fun `when buy order on existing sell price and quantity is the same then fill order and remove from book`() {
         //given
         val market = MarketMatchingEngine()
-        val existingSellLimitOrder = LimitOrder("SELL", 0.1.toBigDecimal(), 1000.0, "BTCZAR")
-        val buyLimitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0, "BTCZAR")
+        val existingSellLimitOrder = LimitOrder("SELL", 0.1.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
+        val buyLimitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
         market.handleLimitOrder(existingSellLimitOrder)
         //when
         market.handleLimitOrder(buyLimitOrder)
@@ -171,8 +171,8 @@ class MarketMatchingEngineTest {
     fun `when sell order on existing buy price and quantity is the same then fill order and remove from book`() {
         //given
         val market = MarketMatchingEngine()
-        val existingBuyLimitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0, "BTCZAR")
-        val sellLimitOrder = LimitOrder("SELL", 0.1.toBigDecimal(), 1000.0, "BTCZAR")
+        val existingBuyLimitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
+        val sellLimitOrder = LimitOrder("SELL", 0.1.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
         market.handleLimitOrder(existingBuyLimitOrder)
         //when
         market.handleLimitOrder(sellLimitOrder)
@@ -185,8 +185,8 @@ class MarketMatchingEngineTest {
     fun `when sell order on existing buy price and quantity of buy price is higher then fill order only`() {
         //given
         val market = MarketMatchingEngine()
-        val existingBuyLimitOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 1000.0, "BTCZAR")
-        val sellLimitOrder = LimitOrder("SELL", 0.1.toBigDecimal(), 1000.0, "BTCZAR")
+        val existingBuyLimitOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
+        val sellLimitOrder = LimitOrder("SELL", 0.1.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
         market.handleLimitOrder(existingBuyLimitOrder)
         //when
         market.handleLimitOrder(sellLimitOrder)
@@ -205,9 +205,9 @@ class MarketMatchingEngineTest {
     fun `when sell order on existing buy price with multiple limits and quantity of buy price is higher then fill order only and remove filled orders`() {
         //given
         val market = MarketMatchingEngine()
-        val existingBuyLimitOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 1000.0, "BTCZAR", orderTimestamp = 10)
-        val existingSecondBuyLimitOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 1000.0, "BTCZAR", orderTimestamp = 12)
-        val sellLimitOrder = LimitOrder("SELL", 0.3.toBigDecimal(), 1000.0, "BTCZAR", orderTimestamp = 14)
+        val existingBuyLimitOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR", orderTimestamp = 10)
+        val existingSecondBuyLimitOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR", orderTimestamp = 12)
+        val sellLimitOrder = LimitOrder("SELL", 0.3.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR", orderTimestamp = 14)
         market.handleLimitOrder(existingBuyLimitOrder)
         market.handleLimitOrder(existingSecondBuyLimitOrder)
         //when
@@ -227,8 +227,8 @@ class MarketMatchingEngineTest {
     fun `when buy order on existing price then add new order to book`() {
         //given
         val market = MarketMatchingEngine()
-        val existingLimitOrder = LimitOrder("BUY", 0.3.toBigDecimal(), 1000.0, "BTCZAR", orderTimestamp = 1)
-        val limitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0, "BTCZAR", orderTimestamp = 2)
+        val existingLimitOrder = LimitOrder("BUY", 0.3.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR", orderTimestamp = 1)
+        val limitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR", orderTimestamp = 2)
         market.handleLimitOrder(existingLimitOrder)
         //when
         market.handleLimitOrder(limitOrder)
@@ -248,8 +248,8 @@ class MarketMatchingEngineTest {
     fun `when sell order on existing buy price and sell is larger than buy then add remaining buy order to book`() {
         //given
         val market = MarketMatchingEngine()
-        val existingLimitOrder = LimitOrder("BUY", 0.3.toBigDecimal(), 1000.0, "BTCZAR", orderTimestamp = 1)
-        val limitOrder = LimitOrder("SELL", 0.4.toBigDecimal(), 1000.0, "BTCZAR", orderTimestamp = 2)
+        val existingLimitOrder = LimitOrder("BUY", 0.3.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR", orderTimestamp = 1)
+        val limitOrder = LimitOrder("SELL", 0.4.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR", orderTimestamp = 2)
         market.handleLimitOrder(existingLimitOrder)
         //when
         market.handleLimitOrder(limitOrder)
@@ -269,10 +269,10 @@ class MarketMatchingEngineTest {
     fun `when large sell order on exiting buy wall then fill sell order until sell order price is reached`() {
         //given
         val market = MarketMatchingEngine()
-        val existingLimitOrder = LimitOrder("BUY", 0.3.toBigDecimal(), 1122.0, "BTCZAR", orderTimestamp = 1)
-        val existingOtherLimitOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 1000.0, "BTCZAR", orderTimestamp = 2)
-        val existingCheapLimitOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 800.0, "BTCZAR", orderTimestamp = 2)
-        val limitOrder = LimitOrder("SELL", 0.6.toBigDecimal(), 900.0, "BTCZAR", orderTimestamp = 3)
+        val existingLimitOrder = LimitOrder("BUY", 0.3.toBigDecimal(), 1122.0.toBigDecimal(), "BTCZAR", orderTimestamp = 1)
+        val existingOtherLimitOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR", orderTimestamp = 2)
+        val existingCheapLimitOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 800.0.toBigDecimal(), "BTCZAR", orderTimestamp = 2)
+        val limitOrder = LimitOrder("SELL", 0.6.toBigDecimal(), 900.0.toBigDecimal(), "BTCZAR", orderTimestamp = 3)
         market.handleLimitOrder(existingLimitOrder)
         market.handleLimitOrder(existingOtherLimitOrder)
         market.handleLimitOrder(existingCheapLimitOrder)
@@ -294,10 +294,10 @@ class MarketMatchingEngineTest {
     fun `when large buy order on exiting sell wall then fill buy order until buy order price is reached`() {
         //given
         val market = MarketMatchingEngine()
-        val existingLimitOrder = LimitOrder("SELL", 0.3.toBigDecimal(), 1122.0, "BTCZAR", orderTimestamp = 1)
-        val existingOtherLimitOrder = LimitOrder("SELL", 0.2.toBigDecimal(), 1000.0, "BTCZAR", orderTimestamp = 2)
-        val existingCheapLimitOrder = LimitOrder("SELL", 0.2.toBigDecimal(), 800.0, "BTCZAR", orderTimestamp = 2)
-        val limitOrder = LimitOrder("BUY", 0.6.toBigDecimal(), 1100.0, "BTCZAR", orderTimestamp = 3)
+        val existingLimitOrder = LimitOrder("SELL", 0.3.toBigDecimal(), 1122.0.toBigDecimal(), "BTCZAR", orderTimestamp = 1)
+        val existingOtherLimitOrder = LimitOrder("SELL", 0.2.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR", orderTimestamp = 2)
+        val existingCheapLimitOrder = LimitOrder("SELL", 0.2.toBigDecimal(), 800.0.toBigDecimal(), "BTCZAR", orderTimestamp = 2)
+        val limitOrder = LimitOrder("BUY", 0.6.toBigDecimal(), 1100.0.toBigDecimal(), "BTCZAR", orderTimestamp = 3)
         market.handleLimitOrder(existingLimitOrder)
         market.handleLimitOrder(existingOtherLimitOrder)
         market.handleLimitOrder(existingCheapLimitOrder)
@@ -324,10 +324,10 @@ class MarketMatchingEngineTest {
     fun `when large buy order on exiting sell wall and buy order is larger than sell wall then wipe sell wall`() {
         //given
         val market = MarketMatchingEngine()
-        val existingLimitOrder = LimitOrder("SELL", 0.3.toBigDecimal(), 1122.0, "BTCZAR", orderTimestamp = 1)
-        val existingOtherLimitOrder = LimitOrder("SELL", 0.2.toBigDecimal(), 1000.0, "BTCZAR", orderTimestamp = 2)
-        val existingCheapLimitOrder = LimitOrder("SELL", 0.2.toBigDecimal(), 800.0, "BTCZAR", orderTimestamp = 2)
-        val limitOrder = LimitOrder("BUY", 1.0.toBigDecimal(), 1200.0, "BTCZAR", orderTimestamp = 3)
+        val existingLimitOrder = LimitOrder("SELL", 0.3.toBigDecimal(), 1122.0.toBigDecimal(), "BTCZAR", orderTimestamp = 1)
+        val existingOtherLimitOrder = LimitOrder("SELL", 0.2.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR", orderTimestamp = 2)
+        val existingCheapLimitOrder = LimitOrder("SELL", 0.2.toBigDecimal(), 800.0.toBigDecimal(), "BTCZAR", orderTimestamp = 2)
+        val limitOrder = LimitOrder("BUY", 1.0.toBigDecimal(), 1200.0.toBigDecimal(), "BTCZAR", orderTimestamp = 3)
         market.handleLimitOrder(existingLimitOrder)
         market.handleLimitOrder(existingOtherLimitOrder)
         market.handleLimitOrder(existingCheapLimitOrder)
@@ -352,10 +352,10 @@ class MarketMatchingEngineTest {
     fun `when large sell order on exiting buy wall and sell order is larger than buy wall then wipe buy wall`() {
         //given
         val market = MarketMatchingEngine()
-        val existingLimitOrder = LimitOrder("BUY", 0.3.toBigDecimal(), 800.0, "BTCZAR", orderTimestamp = 1)
-        val existingOtherLimitOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 900.0, "BTCZAR", orderTimestamp = 2)
-        val existingCheapLimitOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 1000.0, "BTCZAR", orderTimestamp = 2)
-        val limitOrder = LimitOrder("SELL", 1.0.toBigDecimal(), 700.0, "BTCZAR", orderTimestamp = 3)
+        val existingLimitOrder = LimitOrder("BUY", 0.3.toBigDecimal(), 800.0.toBigDecimal(), "BTCZAR", orderTimestamp = 1)
+        val existingOtherLimitOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 900.0.toBigDecimal(), "BTCZAR", orderTimestamp = 2)
+        val existingCheapLimitOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR", orderTimestamp = 2)
+        val limitOrder = LimitOrder("SELL", 1.0.toBigDecimal(), 700.0.toBigDecimal(), "BTCZAR", orderTimestamp = 3)
         market.handleLimitOrder(existingLimitOrder)
         market.handleLimitOrder(existingOtherLimitOrder)
         market.handleLimitOrder(existingCheapLimitOrder)
@@ -380,8 +380,8 @@ class MarketMatchingEngineTest {
     fun `when an order is filled make sure the market selects the best price`() {
         //given
         val market = MarketMatchingEngine()
-        val massiveBuy = LimitOrder("BUY", 0.3.toBigDecimal(), 2000.0, "BTCZAR")
-        val cheapSell = LimitOrder("SELL", 0.3.toBigDecimal(), 1000.0, "BTCZAR")
+        val massiveBuy = LimitOrder("BUY", 0.3.toBigDecimal(), 2000.0.toBigDecimal(), "BTCZAR")
+        val cheapSell = LimitOrder("SELL", 0.3.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
         market.handleLimitOrder(massiveBuy)
         //when
         market.handleLimitOrder(cheapSell)
@@ -398,8 +398,8 @@ class MarketMatchingEngineTest {
     fun `when a single sell order is filled then record the single trade`() {
         //given
         val market = MarketMatchingEngine()
-        val existingLimitOrder = LimitOrder("BUY", 0.3.toBigDecimal(), 2000.0, "BTCZAR")
-        val limitOrder = LimitOrder("SELL", 0.3.toBigDecimal(), 1000.0, "BTCZAR")
+        val existingLimitOrder = LimitOrder("BUY", 0.3.toBigDecimal(), 2000.0.toBigDecimal(), "BTCZAR")
+        val limitOrder = LimitOrder("SELL", 0.3.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
         market.handleLimitOrder(existingLimitOrder)
         //when
         market.handleLimitOrder(limitOrder)
@@ -422,10 +422,10 @@ class MarketMatchingEngineTest {
     fun `when a single buy order is partially filled then record all the trades at all price ranges`() {
         //given
         val market = MarketMatchingEngine()
-        val existingLimitOrder = LimitOrder("SELL", 0.3.toBigDecimal(), 1122.0, "BTCZAR", orderTimestamp = 1)
-        val existingOtherLimitOrder = LimitOrder("SELL", 0.2.toBigDecimal(), 1000.0, "BTCZAR", orderTimestamp = 2)
-        val existingCheapLimitOrder = LimitOrder("SELL", 0.2.toBigDecimal(), 800.0, "BTCZAR", orderTimestamp = 2)
-        val limitOrder = LimitOrder("BUY", 1.0.toBigDecimal(), 1200.0, "BTCZAR", orderTimestamp = 3)
+        val existingLimitOrder = LimitOrder("SELL", 0.3.toBigDecimal(), 1122.0.toBigDecimal(), "BTCZAR", orderTimestamp = 1)
+        val existingOtherLimitOrder = LimitOrder("SELL", 0.2.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR", orderTimestamp = 2)
+        val existingCheapLimitOrder = LimitOrder("SELL", 0.2.toBigDecimal(), 800.0.toBigDecimal(), "BTCZAR", orderTimestamp = 2)
+        val limitOrder = LimitOrder("BUY", 1.0.toBigDecimal(), 1200.0.toBigDecimal(), "BTCZAR", orderTimestamp = 3)
         market.handleLimitOrder(existingLimitOrder)
         market.handleLimitOrder(existingOtherLimitOrder)
         market.handleLimitOrder(existingCheapLimitOrder)
@@ -461,10 +461,10 @@ class MarketMatchingEngineTest {
     fun `when a single sell order is partially filled then record all the trades at all price ranges`() {
         //given
         val market = MarketMatchingEngine()
-        val biggestBuyOrder = LimitOrder("BUY", 0.3.toBigDecimal(), 4000.0, "BTCZAR", orderTimestamp = 1)
-        val biggerBuyOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 3000.0, "BTCZAR", orderTimestamp = 2)
-        val smallestBuyOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 2000.0, "BTCZAR", orderTimestamp = 2)
-        val limitOrder = LimitOrder("SELL", 1.0.toBigDecimal(), 1500.0, "BTCZAR", orderTimestamp = 3)
+        val biggestBuyOrder = LimitOrder("BUY", 0.3.toBigDecimal(), 4000.0.toBigDecimal(), "BTCZAR", orderTimestamp = 1)
+        val biggerBuyOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 3000.0.toBigDecimal(), "BTCZAR", orderTimestamp = 2)
+        val smallestBuyOrder = LimitOrder("BUY", 0.2.toBigDecimal(), 2000.0.toBigDecimal(), "BTCZAR", orderTimestamp = 2)
+        val limitOrder = LimitOrder("SELL", 1.0.toBigDecimal(), 1500.0.toBigDecimal(), "BTCZAR", orderTimestamp = 3)
         market.handleLimitOrder(biggestBuyOrder)
         market.handleLimitOrder(biggerBuyOrder)
         market.handleLimitOrder(smallestBuyOrder)
