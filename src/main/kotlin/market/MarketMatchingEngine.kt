@@ -11,7 +11,7 @@ import java.util.*
  **/
 class MarketMatchingEngine(
     private val orderBook: OrderBook = OrderBook(),
-    private val completedOrders: ArrayDeque<CompletedOrder> = ArrayDeque()
+    private val completedOrders: Queue<CompletedOrder> = LinkedList()
 ) {
     private val zero = 0.0.toBigDecimal()
 
@@ -75,6 +75,6 @@ class MarketMatchingEngine(
 
     fun retrieveCurrentOrderBook(): OrderBook = orderBook
 
-    fun retrieveOrderList(): ArrayDeque<CompletedOrder> = completedOrders
+    fun retrieveOrderList(): Queue<CompletedOrder> = completedOrders
 
 }

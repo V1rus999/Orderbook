@@ -390,7 +390,7 @@ class MarketMatchingEngineTest {
         val orderList = market.retrieveOrderList()
         // Make sure that the SELL is hit at 2000 and not 1000
         Assert.assertTrue(
-            orderList.first.price == massiveBuy.price
+            orderList.peek().price == massiveBuy.price
         )
     }
 
@@ -410,10 +410,10 @@ class MarketMatchingEngineTest {
             orderList.size == 1
         )
         Assert.assertTrue(
-            orderList.first.orderId == limitOrder.orderId
+            orderList.peek().orderId == limitOrder.orderId
         )
         Assert.assertTrue(
-            orderList.first.quantity == limitOrder.quantity
+            orderList.peek().quantity == limitOrder.quantity
         )
     }
 
@@ -447,14 +447,14 @@ class MarketMatchingEngineTest {
             orderList.size == 3
         )
         Assert.assertTrue(
-            orderList.first.orderId == limitOrder.orderId
+            orderList.peek().orderId == limitOrder.orderId
         )
-        assertQuantityAndPriceMatch(orderList.first, existingCheapLimitOrder)
-        orderList.pop()
-        assertQuantityAndPriceMatch(orderList.first, existingOtherLimitOrder)
-        orderList.pop()
-        assertQuantityAndPriceMatch(orderList.first, existingLimitOrder)
-        orderList.pop()
+        assertQuantityAndPriceMatch(orderList.peek(), existingCheapLimitOrder)
+        orderList.poll()
+        assertQuantityAndPriceMatch(orderList.peek(), existingOtherLimitOrder)
+        orderList.poll()
+        assertQuantityAndPriceMatch(orderList.peek(), existingLimitOrder)
+        orderList.poll()
     }
 
     @Test
@@ -486,13 +486,13 @@ class MarketMatchingEngineTest {
             orderList.size == 3
         )
         Assert.assertTrue(
-            orderList.first.orderId == limitOrder.orderId
+            orderList.peek().orderId == limitOrder.orderId
         )
-        assertQuantityAndPriceMatch(orderList.first, biggestBuyOrder)
-        orderList.pop()
-        assertQuantityAndPriceMatch(orderList.first, biggerBuyOrder)
-        orderList.pop()
-        assertQuantityAndPriceMatch(orderList.first, smallestBuyOrder)
-        orderList.pop()
+        assertQuantityAndPriceMatch(orderList.peek(), biggestBuyOrder)
+        orderList.poll()
+        assertQuantityAndPriceMatch(orderList.peek(), biggerBuyOrder)
+        orderList.poll()
+        assertQuantityAndPriceMatch(orderList.peek(), smallestBuyOrder)
+        orderList.poll()
     }
 }
