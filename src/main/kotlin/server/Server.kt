@@ -1,3 +1,5 @@
+package server
+
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpServer
 import io.vertx.ext.web.Router
@@ -17,7 +19,7 @@ class Server(private val port: Int = 8080) {
         println("Setting up server on port $port")
         router.route().handler(BodyHandler.create())
         server.requestHandler { router.handle(it) }.listen(port) {
-            if (it.succeeded()) println("Server started on port $port")
+            if (it.succeeded()) println("server.Server started on port $port")
             else println(it.cause())
         }
     }
