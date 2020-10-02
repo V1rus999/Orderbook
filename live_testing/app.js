@@ -1,21 +1,25 @@
 const axios = require("axios").default;
 
-const sell = {
-  side: "SELL",
-  quantity: "0.100000",
-  price: "10002",
-  pair: "BTCZAR",
-  postOnly: true,
-  customerOrderId: "1235",
-};
+function createBuy(quantity, price) {
+  return {
+    side: "BUY",
+    quantity: quantity,
+    price: price,
+    pair: "BTCZAR",
+    postOnly: true,
+    customerOrderId: "1235",
+  }
+}
 
-const buy = {
-  side: "BUY",
-  quantity: "0.100000",
-  price: "10002",
-  pair: "BTCZAR",
-  postOnly: true,
-  customerOrderId: "1235",
+function createSell(quantity, price) {
+  return {
+    side: "SELL",
+    quantity: quantity,
+    price: price,
+    pair: "BTCZAR",
+    postOnly: true,
+    customerOrderId: "1235",
+  }
 }
 
 async function addLimitOrder(objectToPost) {
@@ -45,10 +49,11 @@ async function doTradesListRequest() {
 
 async function main() {
   console.log("Starting");
-  const sellRes = await addLimitOrder(sell);
-  console.log(sellRes.status);
-  const buyRes = await addLimitOrder(buy);
-  console.log(buyRes.status);
+  await addLimitOrder(createBuy(0.3, 4000));
+  await addLimitOrder(createBuy(0.3, 3000));
+  await addLimitOrder(createBuy(0.3, 2000));
+  await addLimitOrder(createSell(1, 1500));
+
   const trades = await doTradesListRequest();
   console.log("Done");
 }

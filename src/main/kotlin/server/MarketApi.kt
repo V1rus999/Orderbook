@@ -3,6 +3,8 @@ package server
 import com.google.gson.Gson
 import market.LimitOrder
 import market.MarketMatchingEngine
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -11,14 +13,25 @@ class MarketApi(
     private val gson: Gson = Gson()
 ) {
 
+    private val times : MutableList<Long> = mutableListOf()
+
     fun receivedLimitOrderRequest(requestStringBody: String): ServerResponse {
         println("Received limit order request with body:")
         println(requestStringBody)
         // TODO validate body
         val requestLimitOrder = requestStringBody.transformStringBodyToObj<LimitOrder>(LimitOrder::class)
         val modifiedLimitOrder = addOrderIdAndTimestampToRequest(requestLimitOrder)
+
+        val timeBefore = System.nanoTime()
+        val handledOrder = marketMatchingEngine.handleLimitOrder(modifiedLimitOrder)
+        val timeTaken = System.nanoTime() - timeBefore
+        println("Processed Order in $timeTaken nanoseconds")
+        times.add(timeTaken)
+        val avgProcessingTime = times.sum() / times.size
+        println("Avg processing time $avgProcessingTime nanoseconds")
+
         //TODO This needs to transform the market result into a standard http response
-        return ServerResponse(200, marketMatchingEngine.handleLimitOrder(modifiedLimitOrder).toString())
+        return ServerResponse(200, handledOrder.toString())
     }
 
     fun receivedTradesListRequest(): ServerResponse {
