@@ -8,7 +8,7 @@ function createBuy(quantity, price) {
     pair: "BTCZAR",
     postOnly: true,
     customerOrderId: "1235",
-  }
+  };
 }
 
 function createSell(quantity, price) {
@@ -19,7 +19,7 @@ function createSell(quantity, price) {
     pair: "BTCZAR",
     postOnly: true,
     customerOrderId: "1235",
-  }
+  };
 }
 
 async function addLimitOrder(objectToPost) {
@@ -36,6 +36,17 @@ async function addLimitOrder(objectToPost) {
   }
 }
 
+async function checkTimings() {
+  try {
+    const response = await axios.get("http://localhost:8080/orders/timings");
+    return response;
+  } catch (error) {
+    console.error("doTradesListRequest");
+    console.error(error);
+    return null;
+  }
+}
+
 async function doTradesListRequest() {
   try {
     const response = await axios.get("http://localhost:8080/orders/trades");
@@ -47,14 +58,22 @@ async function doTradesListRequest() {
   }
 }
 
-async function main() {
-  console.log("Starting");
-  await addLimitOrder(createBuy(0.3, 4000));
-  await addLimitOrder(createBuy(0.3, 3000));
-  await addLimitOrder(createBuy(0.3, 2000));
-  await addLimitOrder(createSell(1, 1500));
+async function doABunchOfTrades() {
+  for (var i = 0; i < 100; i++) {
+    await addLimitOrder(createBuy(0.3, 4000));
+    await addLimitOrder(createBuy(0.3, 3000));
+    await addLimitOrder(createBuy(0.3, 2000));
+    await addLimitOrder(createSell(1, 1500));
+  }
+}
 
-  const trades = await doTradesListRequest();
+async function main() {
+  await doABunchOfTrades();
+  await doABunchOfTrades();
+  await doABunchOfTrades();
+  await doABunchOfTrades();
+  const res = await checkTimings();
+  console.log(res.data);
   console.log("Done");
 }
 
