@@ -11,24 +11,24 @@ class MarketApi(
     private val gson: Gson = Gson()
 ) {
 
-    fun receivedLimitOrderRequest(requestStringBody: String): String {
+    fun receivedLimitOrderRequest(requestStringBody: String): ServerResponse {
         println("Received limit order request with body:")
         println(requestStringBody)
         // TODO validate body
         val requestLimitOrder = requestStringBody.transformStringBodyToObj<LimitOrder>(LimitOrder::class)
         val modifiedLimitOrder = addOrderIdAndTimestampToRequest(requestLimitOrder)
         //TODO This needs to transform the market result into a standard http response
-        return marketMatchingEngine.handleLimitOrder(modifiedLimitOrder).toString()
+        return ServerResponse(200, marketMatchingEngine.handleLimitOrder(modifiedLimitOrder).toString())
     }
 
-    fun receivedTradesListRequest(): String {
+    fun receivedTradesListRequest(): ServerResponse {
         println("Received tradeslist request:")
         //TODO Make this pretty
         val tradesList = marketMatchingEngine.retrieveOrderList()
         tradesList.forEach {
             println("SIDE:${it.side}||VOLUME:${it.quantity}||PRICE:${it.price}")
         }
-        return "Done"
+        return ServerResponse(200, tradesList.toString())
     }
 
     private fun addOrderIdAndTimestampToRequest(originalRequestObject: LimitOrder) =
@@ -39,7 +39,7 @@ class MarketApi(
         return transformedObject as T
     }
 
-    fun handleInaccessibleRoutes(): String {
-        return "Can't find that..."
+    fun handleInaccessibleRoutes(): ServerResponse {
+        return ServerResponse(404, "Cant find that")
     }
 }

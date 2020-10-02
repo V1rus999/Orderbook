@@ -24,19 +24,21 @@ class Server(private val port: Int = 8080) {
         }
     }
 
-    fun attachPostRoute(path: String, handler: (String) -> String) {
+    fun attachPostRoute(path: String, handler: (String) -> ServerResponse) {
         println("Attached post route at $path")
         router.post(path)
             .handler {
-                it.response().end(handler(it.bodyAsString))
+                val response = handler(it.bodyAsString)
+                it.response().setStatusCode(response.code).end(response.data)
             }
     }
 
-    fun attachGetRoute(path: String, handler: () -> String) {
+    fun attachGetRoute(path: String, handler: () -> ServerResponse) {
         println("Attached get route at $path")
         router.get(path)
             .handler {
-                it.response().end(handler())
+                val response = handler()
+                it.response().setStatusCode(response.code).end(response.data)
             }
     }
 }
