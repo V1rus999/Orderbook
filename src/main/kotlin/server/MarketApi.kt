@@ -22,7 +22,7 @@ class MarketApi(
     }
 
     fun receivedTradesListRequest(): ServerResponse {
-        println("Received tradeslist request:")
+        println("Received tradeslist request")
         //TODO Make this pretty
         val tradesList = marketMatchingEngine.retrieveOrderList()
         tradesList.forEach {
