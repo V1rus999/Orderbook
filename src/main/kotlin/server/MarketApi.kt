@@ -29,16 +29,15 @@ class MarketApi(
         return ServerResponse(200, handledOrder.toString())
     }
 
-    fun receivedTradesListRequest(): ServerResponse {
+    fun receivedTradesHistoryRequest(): ServerResponse {
         println("Received tradeslist request")
         //TODO Make this pretty
         val tradesList = marketMatchingEngine.retrieveOrderList()
-        return ServerResponse(200, tradesList.toString())
+        return ServerResponse(200, gson.toJson(tradesList))
     }
 
     fun receivedTimingsRequest(): ServerResponse {
         println("Received timings request")
-        //TODO Make this pretty
         val avgProcessingTime = times.sum() / times.size
         val firstTradeTime = times.first()
         val lastTradeTime = times.last()

@@ -14,5 +14,5 @@ data class LimitOrder(
 
 data class CompletedOrder(
     val quantity: BigDecimal, val price: BigDecimal, val side: String,
-    val orderId: UUID, val completedTimeStamp: Long = System.currentTimeMillis()
+    val orderId: UUID, val tradedAt: Long = System.currentTimeMillis()
 )
