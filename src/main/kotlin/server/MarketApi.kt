@@ -11,7 +11,7 @@ class MarketApi(
 ) {
     private val timings: MutableList<Long> = mutableListOf()
 
-    fun receivedLimitOrderRequest(requestStringBody: String): ServerResponse {
+    fun receivedLimitOrderRequest(apiKey: ApiKey, requestStringBody: String): ServerResponse {
         // TODO validate body
         val requestLimitOrder = requestStringBody.transformStringBodyToObj<LimitOrder>(LimitOrder::class)
         val modifiedLimitOrder = addOrderIdAndTimestampToRequest(requestLimitOrder)
@@ -23,7 +23,7 @@ class MarketApi(
         return ServerResponse(202, handledOrder.message)
     }
 
-    fun receivedTradesHistoryRequest(): ServerResponse {
+    fun receivedTradesHistoryRequest(apiKey: ApiKey): ServerResponse {
         println("Received trade history request")
         val tradesList = marketMatchingEngine.retrieveOrderList()
         return ServerResponse(200, gson.toJson(tradesList))

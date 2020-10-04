@@ -15,6 +15,7 @@ class Server(private val port: Int = 8080) {
     private val server: HttpServer = vertx.createHttpServer()
     private val router: Router = Router.router(vertx)
 
+
     init {
         router.route().handler(BodyHandler.create())
     }
@@ -27,20 +28,22 @@ class Server(private val port: Int = 8080) {
         }
     }
 
-    fun attachPostRoute(path: String, handler: (String) -> ServerResponse) {
+    fun attachPostRoute(path: String, handler: (ApiKey, String) -> ServerResponse) {
         println("Attached post route at $path")
         router.post(path)
             .handler {
-                val response = handler(it.bodyAsString)
+                val response = handler(ApiKey(it.request().getHeader(API_KEY_NAME)), it.bodyAsString)
+                it.parsedHeaders()
+                it.request().headers().get("api-key")
                 it.response().setStatusCode(response.code).end(response.data)
             }
     }
 
-    fun attachGetRoute(path: String, handler: () -> ServerResponse) {
+    fun attachGetRoute(path: String, handler: (ApiKey) -> ServerResponse) {
         println("Attached get route at $path")
         router.get(path)
             .handler {
-                val response = handler()
+                val response = handler(ApiKey(it.request().getHeader(API_KEY_NAME)))
                 it.response().setStatusCode(response.code).end(response.data)
             }
     }
