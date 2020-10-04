@@ -15,7 +15,7 @@ data class AddedToBook(val order: LimitOrder) : LimitOrderResult() {
 
 }
 
-data class PartiallyMatchedAndAddedToBook(val original: LimitOrder, val depletedOrder: LimitOrder) :
+data class PartiallyFilledAndAddedToBook(val original: LimitOrder, val depletedOrder: LimitOrder) :
     LimitOrderResult() {
     override val message: String
         get() {
@@ -25,7 +25,7 @@ data class PartiallyMatchedAndAddedToBook(val original: LimitOrder, val depleted
 
 }
 
-data class FullyMatched(val order: LimitOrder) : LimitOrderResult() {
+data class FullyFilled(val order: LimitOrder) : LimitOrderResult() {
     override val message: String
         get() = "Order ${order.orderId} with quantity ${order.quantity} has been filled"
 

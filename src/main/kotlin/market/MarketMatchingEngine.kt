@@ -21,9 +21,9 @@ class MarketMatchingEngine(
         } else {
             val remainingOrder = tryDepleteOrder(incomingOrder)
             return if (remainingOrder.quantity > zero) {
-                PartiallyMatchedAndAddedToBook(incomingOrder, remainingOrder)
+                PartiallyFilledAndAddedToBook(incomingOrder, remainingOrder)
             } else {
-                FullyMatched(incomingOrder)
+                FullyFilled(incomingOrder)
             }
         }
     }
