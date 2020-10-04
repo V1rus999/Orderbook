@@ -12,15 +12,18 @@ class MarketApi(
     private val timings: MutableList<Long> = mutableListOf()
 
     fun receivedLimitOrderRequest(apiKey: ApiKey, requestStringBody: String): ServerResponse {
-        // TODO validate body
         val requestLimitOrder = requestStringBody.transformStringBodyToObj<LimitOrder>(LimitOrder::class)
-        val modifiedLimitOrder = addOrderIdAndTimestampToRequest(requestLimitOrder)
+        return if (requestLimitOrder.isValidLimitOrder()) {
+            val modifiedLimitOrder = addOrderIdAndTimestampToRequest(requestLimitOrder)
 
-        val timeBefore = System.nanoTime()
-        val handledOrder = marketMatchingEngine.handleLimitOrder(modifiedLimitOrder)
-        val timeTaken = System.nanoTime() - timeBefore
-        timings.add(timeTaken)
-        return ServerResponse(202, handledOrder.message)
+            val timeBefore = System.nanoTime()
+            val handledOrder = marketMatchingEngine.handleLimitOrder(modifiedLimitOrder)
+            val timeTaken = System.nanoTime() - timeBefore
+            timings.add(timeTaken)
+            ServerResponse(202, handledOrder.message)
+        } else {
+            ServerResponse(422, "Unprocessable Entity")
+        }
     }
 
     fun receivedTradesHistoryRequest(apiKey: ApiKey): ServerResponse {

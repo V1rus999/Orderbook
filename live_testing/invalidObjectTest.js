@@ -11,7 +11,12 @@ async function addLimitOrder(objectToPost) {
   try {
     const response = await axios.post(
       "http://localhost:8080/orders/limit",
-      invalidObject
+      objectToPost,
+      {
+        headers: {
+          "api-key": "123",
+        },
+      }
     );
     return response;
   } catch (error) {
@@ -21,12 +26,13 @@ async function addLimitOrder(objectToPost) {
   }
 }
 
+
 async function main() {
   console.log("Starting");
-  const sellRes = await addLimitOrder(sell);
-  console.log(sellRes.status);
+  const sellRes = await addLimitOrder(invalidObject);
+  console.log(sellRes.data);
   const buyRes = await addLimitOrder(buy);
-  console.log(buyRes.status);
+  console.log(buyRes.data);
   const trades = await doTradesListRequest();
   console.log("Done");
 }
