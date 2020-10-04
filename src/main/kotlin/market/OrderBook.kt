@@ -8,7 +8,6 @@ data class OrderBook(
 ) {
     fun topBid(): LimitOrder? = currentBids.peek()
     fun topAsk(): LimitOrder? = currentAsks.peek()
-
     fun modifyTopLimit(newTopLimit: LimitOrder) {
         if (newTopLimit.side == "BUY") {
             currentBids.poll()

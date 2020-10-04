@@ -1,10 +1,7 @@
 package server
 
 import com.google.gson.Gson
-import market.LimitOrder
-import market.MarketMatchingEngine
-import java.time.Instant
-import java.time.temporal.ChronoUnit
+import market.*
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -13,7 +10,7 @@ class MarketApi(
     private val gson: Gson = Gson()
 ) {
 
-    private val times : MutableList<Long> = mutableListOf()
+    private val timings: MutableList<Long> = mutableListOf()
 
     fun receivedLimitOrderRequest(requestStringBody: String): ServerResponse {
         // TODO validate body
@@ -23,10 +20,21 @@ class MarketApi(
         val timeBefore = System.nanoTime()
         val handledOrder = marketMatchingEngine.handleLimitOrder(modifiedLimitOrder)
         val timeTaken = System.nanoTime() - timeBefore
-        times.add(timeTaken)
+        timings.add(timeTaken)
+        val limitOrderResponse = when (handledOrder) {
+            is AddedToBook ->
+                LimitOrderResponseData("ADDED TO BOOK", modifiedLimitOrder.orderId.toString())
+
+            is PartiallyMatchedAndAddedToBook ->
+                LimitOrderResponseData("PARTIALLY FILLED", modifiedLimitOrder.orderId.toString())
+
+            is FullyMatched ->
+                LimitOrderResponseData("FULLY FILLED", modifiedLimitOrder.orderId.toString())
+
+        }
 
         //TODO This needs to transform the market result into a standard http response
-        return ServerResponse(200, handledOrder.toString())
+        return ServerResponse(202, limitOrderResponse.toJson(gson))
     }
 
     fun receivedTradesHistoryRequest(): ServerResponse {
@@ -38,11 +46,14 @@ class MarketApi(
 
     fun receivedTimingsRequest(): ServerResponse {
         println("Received timings request")
-        val avgProcessingTime = times.sum() / times.size
-        val firstTradeTime = times.first()
-        val lastTradeTime = times.last()
+        val avgProcessingTime = timings.sum() / timings.size
+        val firstTradeTime = timings.first()
+        val lastTradeTime = timings.last()
 
-        return ServerResponse(200, "{\"avg\":\"$avgProcessingTime\",\"first\":\"$firstTradeTime\",\"last\":\"$lastTradeTime\"}")
+        return ServerResponse(
+            200,
+            "{\"avg\":\"$avgProcessingTime\",\"first\":\"$firstTradeTime\",\"last\":\"$lastTradeTime\"}"
+        )
     }
 
     private fun addOrderIdAndTimestampToRequest(originalRequestObject: LimitOrder) =

@@ -1,7 +1,5 @@
 package market
 
-import Result
-import Success
 import java.math.BigDecimal
 import java.util.*
 
@@ -15,17 +13,17 @@ class MarketMatchingEngine(
 ) {
     private val zero = 0.0.toBigDecimal()
 
-    fun handleLimitOrder(incomingOrder: LimitOrder): Result<LimitOrderResult, Exception> {
+    fun handleLimitOrder(incomingOrder: LimitOrder): LimitOrderResult {
         val shouldOrderBeAddedDirectly = orderBook.canOrderBeAddedToBookWithoutMatching(incomingOrder)
         return if (shouldOrderBeAddedDirectly) {
             orderBook.addNewTrade(incomingOrder)
-            Success(AddedToBook(incomingOrder))
+            AddedToBook(incomingOrder)
         } else {
             val remainingOrder = tryDepleteOrder(incomingOrder)
             return if (remainingOrder.quantity > zero) {
-                Success(PartiallyMatchedAndAddedToBook(incomingOrder, remainingOrder))
+                PartiallyMatchedAndAddedToBook(incomingOrder, remainingOrder)
             } else {
-                Success(FullyMatched(incomingOrder))
+                FullyMatched(incomingOrder)
             }
         }
     }
