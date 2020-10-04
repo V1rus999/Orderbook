@@ -33,8 +33,6 @@ class Server(private val port: Int = 8080) {
         router.post(path)
             .handler {
                 val response = handler(ApiKey(it.request().getHeader(API_KEY_NAME)), it.bodyAsString)
-                it.parsedHeaders()
-                it.request().headers().get("api-key")
                 it.response().setStatusCode(response.code).end(response.data)
             }
     }
