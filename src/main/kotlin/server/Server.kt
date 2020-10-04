@@ -17,7 +17,6 @@ class Server(private val port: Int = 8080) {
 
     init {
         router.route().handler(BodyHandler.create())
-
     }
 
     fun startServer() {

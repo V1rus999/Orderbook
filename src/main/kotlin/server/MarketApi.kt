@@ -21,25 +21,11 @@ class MarketApi(
         val handledOrder = marketMatchingEngine.handleLimitOrder(modifiedLimitOrder)
         val timeTaken = System.nanoTime() - timeBefore
         timings.add(timeTaken)
-        val limitOrderResponse = when (handledOrder) {
-            is AddedToBook ->
-                LimitOrderResponseData("ADDED TO BOOK", modifiedLimitOrder.orderId.toString())
-
-            is PartiallyMatchedAndAddedToBook ->
-                LimitOrderResponseData("PARTIALLY FILLED", modifiedLimitOrder.orderId.toString())
-
-            is FullyMatched ->
-                LimitOrderResponseData("FULLY FILLED", modifiedLimitOrder.orderId.toString())
-
-        }
-
-        //TODO This needs to transform the market result into a standard http response
-        return ServerResponse(202, limitOrderResponse.toJson(gson))
+        return ServerResponse(202, handledOrder.message)
     }
 
     fun receivedTradesHistoryRequest(): ServerResponse {
         println("Received tradeslist request")
-        //TODO Make this pretty
         val tradesList = marketMatchingEngine.retrieveOrderList()
         return ServerResponse(200, gson.toJson(tradesList))
     }

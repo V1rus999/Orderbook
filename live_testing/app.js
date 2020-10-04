@@ -68,13 +68,13 @@ async function doABunchOfTrades() {
 }
 
 async function main() {
-  const resp = await addLimitOrder(createBuy(0.4, 4000));
-  // await doABunchOfTrades();
-  // await doABunchOfTrades();
-  // await doABunchOfTrades();
-  // await doABunchOfTrades();
-  // const res = await checkTimings();
-  console.log(resp.data);
+  // const resp = await addLimitOrder(createBuy(0.4, 4000));
+  await doABunchOfTrades();
+  await doABunchOfTrades();
+  await doABunchOfTrades();
+  await doABunchOfTrades();
+  const res = await checkTimings();
+  console.log(res.data);
   console.log("Done");
 }
 
