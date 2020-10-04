@@ -26,7 +26,12 @@ async function addLimitOrder(objectToPost) {
   try {
     const response = await axios.post(
       "http://localhost:8080/orders/limit",
-      objectToPost
+      objectToPost,
+      {
+        headers: {
+          "api-key": "123",
+        },
+      }
     );
     return response;
   } catch (error) {
@@ -38,7 +43,9 @@ async function addLimitOrder(objectToPost) {
 
 async function checkTimings() {
   try {
-    const response = await axios.get("http://localhost:8080/health/tradetimings");
+    const response = await axios.get(
+      "http://localhost:8080/health/tradetimings"
+    );
     return response;
   } catch (error) {
     console.error("doTradesListRequest");
@@ -49,7 +56,9 @@ async function checkTimings() {
 
 async function doTradesListRequest() {
   try {
-    const response = await axios.get("http://localhost:8080//marketdata/tradehistory");
+    const response = await axios.get(
+      "http://localhost:8080//marketdata/tradehistory"
+    );
     return response;
   } catch (error) {
     console.error("doTradesListRequest");
@@ -68,13 +77,13 @@ async function doABunchOfTrades() {
 }
 
 async function main() {
-  // const resp = await addLimitOrder(createBuy(0.4, 4000));
-  await doABunchOfTrades();
-  await doABunchOfTrades();
-  await doABunchOfTrades();
-  await doABunchOfTrades();
+  const resp = await addLimitOrder(createBuy(0.4, 4000));
+  // await doABunchOfTrades();
+  // await doABunchOfTrades();
+  // await doABunchOfTrades();
+  // await doABunchOfTrades();
   const res = await checkTimings();
-  console.log(res.data);
+  console.log(resp.data);
   console.log("Done");
 }
 
