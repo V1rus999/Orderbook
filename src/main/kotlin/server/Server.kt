@@ -15,7 +15,6 @@ class Server(private val port: Int = 8080) {
     private val server: HttpServer = vertx.createHttpServer()
     private val router: Router = Router.router(vertx)
 
-
     init {
         router.route().handler(BodyHandler.create())
     }
@@ -23,7 +22,7 @@ class Server(private val port: Int = 8080) {
     fun startServer() {
         println("Setting up server on port $port")
         server.requestHandler { router.handle(it) }.listen(port) {
-            if (it.succeeded()) println("server.Server started on port $port")
+            if (it.succeeded()) println("Server started on port $port")
             else println(it.cause())
         }
     }
