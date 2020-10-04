@@ -9,7 +9,6 @@ class MarketApi(
     private val marketMatchingEngine: MarketMatchingEngine = MarketMatchingEngine(),
     private val gson: Gson = Gson()
 ) {
-
     private val timings: MutableList<Long> = mutableListOf()
 
     fun receivedLimitOrderRequest(requestStringBody: String): ServerResponse {
@@ -25,7 +24,7 @@ class MarketApi(
     }
 
     fun receivedTradesHistoryRequest(): ServerResponse {
-        println("Received tradeslist request")
+        println("Received trade history request")
         val tradesList = marketMatchingEngine.retrieveOrderList()
         return ServerResponse(200, gson.toJson(tradesList))
     }
@@ -51,6 +50,6 @@ class MarketApi(
     }
 
     fun handleInaccessibleRoutes(): ServerResponse {
-        return ServerResponse(404, "Cant find that")
+        return ServerResponse(401, "Unauthorized")
     }
 }

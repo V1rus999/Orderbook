@@ -38,7 +38,7 @@ async function addLimitOrder(objectToPost) {
 
 async function checkTimings() {
   try {
-    const response = await axios.get("http://localhost:8080/orders/timings");
+    const response = await axios.get("http://localhost:8080/health/tradetimings");
     return response;
   } catch (error) {
     console.error("doTradesListRequest");
@@ -49,7 +49,7 @@ async function checkTimings() {
 
 async function doTradesListRequest() {
   try {
-    const response = await axios.get("http://localhost:8080/orders/trades");
+    const response = await axios.get("http://localhost:8080//marketdata/tradehistory");
     return response;
   } catch (error) {
     console.error("doTradesListRequest");
