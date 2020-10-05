@@ -107,12 +107,53 @@ class OrderBookTest {
     }
 
     @Test
-    fun `Ensure if there a bid and new bid is priced lower than top bid then an order will be placed in the book directly`() {
+    fun `Ensure if there is a bid and new bid is priced lower than top bid then an order will be placed in the book directly`() {
         //Given
         val orderBook = OrderBook()
         val existingBid = LimitOrder("BUY", 0.1.toBigDecimal(), 2000.0.toBigDecimal(), "BTCZAR")
         val order = LimitOrder("BUY", 0.1.toBigDecimal(), 1500.0.toBigDecimal(), "BTCZAR")
         orderBook.addNewTrade(existingBid)
+        //When
+        val result = orderBook.canOrderBeAddedToBookWithoutMatching(order)
+        //Then
+        assertTrue(result)
+    }
+
+    @Test
+    fun `Ensure if there are no bids and new order is an ask then order is placed directly`() {
+        //Given
+        val orderBook = OrderBook()
+        val existingBid = LimitOrder("SELL", 0.1.toBigDecimal(), 2000.0.toBigDecimal(), "BTCZAR")
+        val order = LimitOrder("SELL", 0.1.toBigDecimal(), 1500.0.toBigDecimal(), "BTCZAR")
+        orderBook.addNewTrade(existingBid)
+        //When
+        val result = orderBook.canOrderBeAddedToBookWithoutMatching(order)
+        //Then
+        assertTrue(result)
+    }
+
+    @Test
+    fun `Ensure if there are no asks and new order is a bid then order is placed directly`() {
+        //Given
+        val orderBook = OrderBook()
+        val existingBid = LimitOrder("BUY", 0.1.toBigDecimal(), 2000.0.toBigDecimal(), "BTCZAR")
+        val order = LimitOrder("BUY", 0.1.toBigDecimal(), 1500.0.toBigDecimal(), "BTCZAR")
+        orderBook.addNewTrade(existingBid)
+        //When
+        val result = orderBook.canOrderBeAddedToBookWithoutMatching(order)
+        //Then
+        assertTrue(result)
+    }
+
+    @Test
+    fun `Ensure if new order is priced between highest bid and lowest ask then order is placed directly`() {
+        //Given
+        val orderBook = OrderBook()
+        val highestBid = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
+        val lowestAsk = LimitOrder("SELL", 0.1.toBigDecimal(), 1100.0.toBigDecimal(), "BTCZAR")
+        val order = LimitOrder("SELL", 0.1.toBigDecimal(), 1050.0.toBigDecimal(), "BTCZAR")
+        orderBook.addNewTrade(highestBid)
+        orderBook.addNewTrade(lowestAsk)
         //When
         val result = orderBook.canOrderBeAddedToBookWithoutMatching(order)
         //Then
