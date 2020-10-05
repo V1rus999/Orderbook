@@ -29,34 +29,38 @@ class MarketMatchingEngine(
     }
 
     private fun tryDepleteOrder(incomingOrder: LimitOrder): LimitOrder {
-        var orderBeingProcessed = incomingOrder.copy()
+        var quantityToFill = incomingOrder.quantity
         var orderBookDepleted = false
 
-        while (orderBeingProcessed.quantity > zero && !orderBookDepleted) {
+        while (quantityToFill > zero && !orderBookDepleted) {
             val topBid = orderBook.topBid()
             val topAsk = orderBook.topAsk()
-            if (topBid != null && topBid.price >= orderBeingProcessed.price) {
-                orderBeingProcessed = matchOrderWithExistingBookOrder(orderBeingProcessed, topBid)
-            } else if (topAsk != null && topAsk.price <= orderBeingProcessed.price) {
-                orderBeingProcessed = matchOrderWithExistingBookOrder(orderBeingProcessed, topAsk)
+            if (topBid != null && topBid.price >= incomingOrder.price) {
+                quantityToFill = fillQuantityForOrder(incomingOrder, topBid, quantityToFill)
+            } else if (topAsk != null && topAsk.price <= incomingOrder.price) {
+                quantityToFill = fillQuantityForOrder(incomingOrder, topAsk, quantityToFill)
             } else {
-                orderBook.addNewTrade(orderBeingProcessed)
+                orderBook.addNewTrade(incomingOrder.copy(quantity = quantityToFill))
                 orderBookDepleted = true
             }
         }
-        return orderBeingProcessed
+        return incomingOrder.copy(quantity = quantityToFill)
     }
 
-    private fun matchOrderWithExistingBookOrder(incomingOrder: LimitOrder, existingBookOrder: LimitOrder): LimitOrder {
-        return if (existingBookOrder.quantity > incomingOrder.quantity) {
-            val newTopLimit = existingBookOrder.copy(quantity = existingBookOrder.quantity - incomingOrder.quantity)
+    private fun fillQuantityForOrder(
+        incomingOrder: LimitOrder,
+        existingBookOrder: LimitOrder,
+        quantityToFill: BigDecimal
+    ): BigDecimal {
+        return if (existingBookOrder.quantity > quantityToFill) {
+            val newTopLimit = existingBookOrder.copy(quantity = existingBookOrder.quantity - quantityToFill)
+            recordCompletedTrade(incomingOrder, quantityToFill, existingBookOrder.price)
             orderBook.modifyTopLimit(newTopLimit)
-            recordCompletedTrade(incomingOrder, incomingOrder.quantity, existingBookOrder.price)
-            incomingOrder.copy(quantity = zero)
+            zero
         } else {
             orderBook.removeTopLimitForSide(existingBookOrder.side)
             recordCompletedTrade(incomingOrder, existingBookOrder.quantity, existingBookOrder.price)
-            incomingOrder.copy(quantity = incomingOrder.quantity - existingBookOrder.quantity)
+            quantityToFill - existingBookOrder.quantity
         }
     }
 

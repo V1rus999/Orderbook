@@ -37,7 +37,9 @@ data class OrderBook(
     fun canOrderBeAddedToBookWithoutMatching(order: LimitOrder): Boolean {
         val topBid = topBid()
         val topAsk = topAsk()
-        return if (topBid == null && topAsk == null) {
+        return if ((topBid == null && order.side == "SELL") || (topAsk == null && order.side == "BUY")) {
+            true
+        } else if (topBid != null && topAsk != null && order.price >= topBid.price && order.price <= topAsk.price) {
             true
         } else if (topBid != null && order.side == "BUY" && topBid.price >= order.price) {
             true

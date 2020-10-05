@@ -13,7 +13,7 @@ class MarketMatchingEngineTest {
     fun `when handle limit order and order is added to the book then return AddedToBook`() {
         //given
         val market = MarketMatchingEngine()
-        val limitOrder = LimitOrder("SOMESIDE", 0.1.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
+        val limitOrder = LimitOrder("BUY", 0.1.toBigDecimal(), 1000.0.toBigDecimal(), "BTCZAR")
         //then
         val result = market.handleLimitOrder(limitOrder)
         assertTrue(result is AddedToBook)

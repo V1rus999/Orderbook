@@ -8,7 +8,7 @@ import java.util.*
 import kotlin.reflect.KClass
 
 class MarketApi(
-    private val marketMatchingEngine: MarketMatchingEngine = MarketMatchingEngine(),
+    private val bitcoinZarMatchingEngine: MarketMatchingEngine = MarketMatchingEngine(),
     private val gson: Gson = Gson(),
     private val authRepo: AuthRepository = AuthRepository()
 ) {
@@ -24,7 +24,7 @@ class MarketApi(
                 val modifiedLimitOrder = addOrderIdAndTimestampToRequest(requestLimitOrder)
 
                 val timeBefore = System.nanoTime()
-                val handledOrder = marketMatchingEngine.handleLimitOrder(modifiedLimitOrder)
+                val handledOrder = bitcoinZarMatchingEngine.handleLimitOrder(modifiedLimitOrder)
                 val timeTaken = System.nanoTime() - timeBefore
                 timings.add(timeTaken)
                 ServerResponse(202, handledOrder.message)
@@ -39,7 +39,7 @@ class MarketApi(
         return if (!authRepo.isValidApiKey(apiKey)) {
             ServerResponse(401, "Unauthorized")
         } else {
-            val tradesList = marketMatchingEngine.retrieveOrderList()
+            val tradesList = bitcoinZarMatchingEngine.retrieveOrderList()
             ServerResponse(200, gson.toJson(tradesList))
         }
     }
