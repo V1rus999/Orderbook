@@ -29,7 +29,7 @@ async function addLimitOrder(objectToPost) {
       objectToPost,
       {
         headers: {
-          "api-key": "123",
+          "api-key": "d3cbe1f81ce173b9c8e5be2bffa28c75",
         },
       }
     );
@@ -77,13 +77,13 @@ async function doABunchOfTrades() {
 }
 
 async function main() {
-  const resp = await addLimitOrder(createBuy(0.4, 4000));
-  // await doABunchOfTrades();
-  // await doABunchOfTrades();
-  // await doABunchOfTrades();
-  // await doABunchOfTrades();
+  // const resp = await addLimitOrder(createBuy(0.4, 4000));
+  await doABunchOfTrades();
+  await doABunchOfTrades();
+  await doABunchOfTrades();
+  await doABunchOfTrades();
   const res = await checkTimings();
-  console.log(resp.data);
+  console.log(res != null ? res.data : "Response");
   console.log("Done");
 }
 

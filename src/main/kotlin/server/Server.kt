@@ -1,5 +1,7 @@
 package server
 
+import auth.API_KEY_NAME
+import auth.ApiKey
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpServer
 import io.vertx.ext.web.Router
